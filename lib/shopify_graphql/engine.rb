@@ -1,5 +1,5 @@
-module ShopifyGraphql
+module ShopifyGraphQL
   class Engine < ::Rails::Engine
-    isolate_namespace ShopifyGraphql
+    isolate_namespace ShopifyGraphQL
   end
 end

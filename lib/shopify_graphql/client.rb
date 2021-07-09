@@ -1,4 +1,4 @@
-module ShopifyGraphql
+module ShopifyGraphQL
   class Client
     attr_accessor :api_version, :gqli_client
 

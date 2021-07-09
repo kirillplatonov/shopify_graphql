@@ -1,4 +1,4 @@
-# ShopifyGraphql
+# ShopifyGraphQL
 Short description and motivation.
 
 ## Usage
