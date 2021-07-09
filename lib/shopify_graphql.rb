@@ -1,6 +1,13 @@
-require "shopify_graphql/version"
-require "shopify_graphql/engine"
+# require "shopify_graphql/version"
+# require "shopify_graphql/engine"
 
-module ShopifyGraphql
-  # Your code goes here...
-end
+require 'gqli'
+
+# config
+require 'shopify_graphql/configuration'
+
+# client
+require 'shopify_graphql/client'
+
+# pre-built resources
+require 'shopify_graphql/shop'
