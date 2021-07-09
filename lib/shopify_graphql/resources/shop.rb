@@ -1,10 +1,8 @@
 module ShopifyGraphQL
-  class Shop
-    extend GQLi::DSL
-
+  class Shop < BaseResource
     class << self
       def current
-        Client.new.execute(
+        execute <<~GRAPHQL
           query {
             shop {
               id
@@ -14,7 +12,7 @@ module ShopifyGraphQL
               plan { displayName }
             }
           }
-        )
+        GRAPHQL
       end
     end
   end
