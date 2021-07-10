@@ -1,21 +1,21 @@
 module ShopifyGraphql
   class WebhooksManager
     class << self
-      def queue_create(shop_domain, shop_token, webhooks)
+      def queue_create(shop_domain, shop_token)
         ShopifyGraphql::CreateWebhooksJob.perform_later(
           shop_domain: shop_domain,
           shop_token: shop_token,
         )
       end
 
-      def queue_destroy(shop_domain, shop_token, webhooks)
+      def queue_destroy(shop_domain, shop_token)
         ShopifyGraphql::DestroyWebhooksJob.perform_later(
           shop_domain: shop_domain,
           shop_token: shop_token,
         )
       end
 
-      def queue_update(shop_domain, shop_token, webhooks)
+      def queue_update(shop_domain, shop_token)
         ShopifyGraphql::UpdateWebhooksJob.perform_later(
           shop_domain: shop_domain,
           shop_token: shop_token,
