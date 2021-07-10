@@ -1,4 +1,4 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   class Client
     def initialize(api_version = ShopifyAPI::Base.api_version)
       @api_version = api_version

@@ -1,12 +1,12 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   module RedactJobParams
     private
 
     def args_info(job)
       log_disabled_classes = %[
-        ShopifyGraphQL::CreateWebhooksJob
-        ShopifyGraphQL::DestroyWebhooksJob
-        ShopifyGraphQL::UpdateWebhooksJob
+        ShopifyGraphql::CreateWebhooksJob
+        ShopifyGraphql::DestroyWebhooksJob
+        ShopifyGraphql::UpdateWebhooksJob
       ]
       return "" if log_disabled_classes.include?(job.class.name)
       super
@@ -15,7 +15,7 @@ module ShopifyGraphQL
 
   class Engine < ::Rails::Engine
     engine_name 'shopify_graphql'
-    isolate_namespace ShopifyGraphQL
+    isolate_namespace ShopifyGraphql
 
     initializer "shopify_app.redact_job_params" do
       ActiveSupport.on_load(:active_job) do

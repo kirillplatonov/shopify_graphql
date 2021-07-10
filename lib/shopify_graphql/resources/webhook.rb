@@ -1,4 +1,4 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   class Webhook < BaseResource
     ALL_WEBHOOKS_QUERY = <<~GRAPHQL
       query {
