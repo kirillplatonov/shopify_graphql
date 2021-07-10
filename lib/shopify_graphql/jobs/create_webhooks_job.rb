@@ -12,6 +12,8 @@ module ShopifyGraphql
         manager = WebhooksManager.new(webhooks)
         manager.create_webhooks
       end
+    rescue UnauthorizedAccess, ResourceNotFound, ForbiddenAccess, PaymentRequired
+      # Ignore
     end
   end
 end

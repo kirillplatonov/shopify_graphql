@@ -38,6 +38,8 @@ module ShopifyGraphql
         raise BadRequest.new(response.body, code: response.status)
       when 401
         raise UnauthorizedAccess.new(response.body, code: response.status)
+      when 402
+        raise PaymentRequired.new(response.body, code: response.status)
       when 403
         raise ForbiddenAccess.new(response.body, code: response.status)
       when 404
