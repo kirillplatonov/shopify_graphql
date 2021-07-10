@@ -47,7 +47,7 @@ module ShopifyGraphql
       return unless webhooks_enabled?
 
       current_webhooks.each do |webhook|
-        ShopifyGraphql::Webhook.delete(webhook.id) if required_webhook?(webhook)
+        ShopifyGraphql::Webhook.delete(webhook.id)
       end
 
       @current_webhooks = nil
@@ -62,11 +62,6 @@ module ShopifyGraphql
         Rails.logger.info("[ShopifyGraphql] Webhooks disabled in #{Rails.env} environment. Check you config.")
         false
       end
-    end
-
-    def required_webhook?(webhook)
-      webhook_address = webhook.endpoint.callbackUrl
-      required_webhooks.any? { |w| w[:address] == webhook_address }
     end
 
     def create_webhook(attributes)
