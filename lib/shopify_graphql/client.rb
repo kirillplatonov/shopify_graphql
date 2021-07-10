@@ -25,7 +25,6 @@ module ShopifyGraphQL
 
     def connection
       @connection ||= Faraday.new(url: api_url, headers: request_headers) do |conn|
-        conn.use Faraday::Response::RaiseError
         conn.request :json
         conn.response :json, parser_options: { object_class: OpenStruct }
       end
@@ -35,6 +34,30 @@ module ShopifyGraphQL
       case response.status
       when 200..400
         handle_graphql_errors(response.body)
+      when 400
+        raise BadRequest.new(response.body, code: response.status)
+      when 401
+        raise UnauthorizedAccess.new(response.body, code: response.status)
+      when 403
+        raise ForbiddenAccess.new(response.body, code: response.status)
+      when 404
+        raise ResourceNotFound.new(response.body, code: response.status)
+      when 405
+        raise MethodNotAllowed.new(response.body, code: response.status)
+      when 409
+        raise ResourceConflict.new(response.body, code: response.status)
+      when 410
+        raise ResourceGone.new(response.body, code: response.status)
+      when 412
+        raise PreconditionFailed.new(response.body, code: response.status)
+      when 422
+        raise ResourceInvalid.new(response.body, code: response.status)
+      when 429
+        raise TooManyRequests.new(response.body, code: response.status)
+      when 401...500
+        raise ClientError.new(response.body, code: response.status)
+      when 500...600
+        raise ServerError.new(response.body, code: response.status)
       else
         raise ConnectionError.new(response.body, "Unknown response code: #{response.status}")
       end

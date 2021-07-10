@@ -24,9 +24,41 @@ module ShopifyGraphQL
   class ClientError < ConnectionError
   end
 
-  # 429 Too Many Requests
-  class TooManyRequests < ClientError
+   # 400 Bad Request
+   class BadRequest < ClientError # :nodoc:
+   end
+
+   # 401 Unauthorized
+   class UnauthorizedAccess < ClientError # :nodoc:
+   end
+
+   # 403 Forbidden
+   class ForbiddenAccess < ClientError # :nodoc:
+   end
+
+   # 404 Not Found
+   class ResourceNotFound < ClientError # :nodoc:
+   end
+
+   # 405 Method Not Allowed
+  class MethodNotAllowed < ClientError # :nodoc:
   end
+
+   # 409 Conflict
+   class ResourceConflict < ClientError # :nodoc:
+   end
+
+   # 410 Gone
+   class ResourceGone < ClientError # :nodoc:
+   end
+
+   # 412 Precondition Failed
+   class PreconditionFailed < ClientError # :nodoc:
+   end
+
+   # 429 Too Many Requests
+   class TooManyRequests < ClientError # :nodoc:
+   end
 
   # 5xx Server Error
   class ServerError < ConnectionError
