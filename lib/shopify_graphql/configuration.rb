@@ -7,7 +7,7 @@ module ShopifyGraphQL
 
     def initialize
       @webhooks_manager_queue_name = Rails.application.config.active_job.queue_name
-      @webhooks_manager_queue_name = ['production']
+      @webhook_enabled_environments = ['production']
     end
 
     def has_webhooks?
