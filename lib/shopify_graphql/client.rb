@@ -12,7 +12,8 @@ module ShopifyGraphql
           variables: variables,
         }.to_json
       end
-      handle_response(response)
+      response = handle_response(response)
+      ShopifyGraphql::Response.new(response)
     end
 
     def api_url

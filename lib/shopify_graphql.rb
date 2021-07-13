@@ -5,6 +5,7 @@ require 'shopify_graphql/client'
 require 'shopify_graphql/configuration'
 require 'shopify_graphql/engine'
 require 'shopify_graphql/exceptions'
+require 'shopify_graphql/response'
 require 'shopify_graphql/version'
 
 # controller concerns
