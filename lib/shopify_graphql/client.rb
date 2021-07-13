@@ -4,7 +4,7 @@ module ShopifyGraphql
       @api_version = api_version
     end
 
-    def execute(query, variables = nil, operation_name: nil)
+    def execute(query, variables: nil, operation_name: nil)
       response = connection.post do |req|
         req.body = {
           query: query,

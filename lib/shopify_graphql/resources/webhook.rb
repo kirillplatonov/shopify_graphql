@@ -53,7 +53,7 @@ module ShopifyGraphql
       end
 
       def create(topic:, address:, include_fields:)
-        response = execute(CREATE_WEBHOOK_MUTATION, {
+        response = execute(CREATE_WEBHOOK_MUTATION, variables: {
           topic: topic,
           webhookSubscription: {
             callbackUrl: address,
@@ -66,7 +66,7 @@ module ShopifyGraphql
       end
 
       def delete(id)
-        response = execute(DELETE_WEBHOOK_MUTATION, { id: id })
+        response = execute(DELETE_WEBHOOK_MUTATION, variables: { id: id })
         response = response.data.webhookSubscriptionDelete
         handle_user_errors(response)
       end
