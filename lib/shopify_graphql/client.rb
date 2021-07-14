@@ -93,7 +93,11 @@ module ShopifyGraphql
     end
   end
 
-  def self.client(api_version = ShopifyAPI::Base.api_version)
-    Client.new(api_version)
+  class << self
+    delegate :execute, to: :client
+
+    def client(api_version = ShopifyAPI::Base.api_version)
+      Client.new(api_version)
+    end
   end
 end
