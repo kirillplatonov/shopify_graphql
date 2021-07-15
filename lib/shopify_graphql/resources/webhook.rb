@@ -1,5 +1,7 @@
 module ShopifyGraphQL
-  class Webhook < BaseResource
+  class Webhook
+    include Resource
+
     ALL_WEBHOOKS_QUERY = <<~GRAPHQL
       query {
         webhookSubscriptions(first: 250) {

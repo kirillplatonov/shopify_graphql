@@ -1,5 +1,7 @@
 module ShopifyGraphQL
-  class Shop < BaseResource
+  class Shop
+    include Resource
+
     class << self
       def current
         execute <<~GRAPHQL
