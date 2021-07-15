@@ -1,8 +1,8 @@
-module ShopifyGraphql
+module ShopifyGraphQL
   class MissingWebhookJobError < StandardError; end
 
   class WebhooksController < ActionController::Base
-    include ShopifyGraphql::WebhookVerification
+    include ShopifyGraphQL::WebhookVerification
 
     def receive
       params.permit!
@@ -17,7 +17,7 @@ module ShopifyGraphql
     end
 
     def webhook_job_klass
-      webhook_job_klass_name.safe_constantize || raise(ShopifyGraphql::MissingWebhookJobError)
+      webhook_job_klass_name.safe_constantize || raise(ShopifyGraphQL::MissingWebhookJobError)
     end
 
     def webhook_job_klass_name(type = webhook_type)
@@ -29,7 +29,7 @@ module ShopifyGraphql
     end
 
     def webhook_namespace
-      ShopifyGraphql.configuration.webhook_jobs_namespace
+      ShopifyGraphQL.configuration.webhook_jobs_namespace
     end
   end
 end

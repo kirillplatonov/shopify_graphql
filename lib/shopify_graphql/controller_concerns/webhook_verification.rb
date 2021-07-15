@@ -1,7 +1,7 @@
-module ShopifyGraphql
+module ShopifyGraphQL
   module WebhookVerification
     extend ActiveSupport::Concern
-    include ShopifyGraphql::PayloadVerification
+    include ShopifyGraphQL::PayloadVerification
 
     included do
       skip_before_action :verify_authenticity_token, raise: false

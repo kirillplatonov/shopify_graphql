@@ -1,4 +1,4 @@
-module ShopifyGraphql
+module ShopifyGraphQL
   class Shop < BaseResource
     class << self
       def current
