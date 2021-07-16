@@ -1,4 +1,4 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   class Shop
     include Resource
 

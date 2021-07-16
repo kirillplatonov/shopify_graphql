@@ -1,4 +1,4 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   class Response
     attr_reader :response, :data, :extensions, :errors
 

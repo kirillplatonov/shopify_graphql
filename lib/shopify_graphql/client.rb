@@ -1,4 +1,4 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   class Client
     def initialize(api_version = ShopifyAPI::Base.api_version)
       @api_version = api_version
@@ -13,7 +13,7 @@ module ShopifyGraphQL
         }.to_json
       end
       response = handle_response(response)
-      ShopifyGraphQL::Response.new(response)
+      ShopifyGraphql::Response.new(response)
     end
 
     def api_url

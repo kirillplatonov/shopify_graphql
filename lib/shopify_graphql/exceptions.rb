@@ -1,4 +1,4 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   class ConnectionError < StandardError
     attr_reader :response
 

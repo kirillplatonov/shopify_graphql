@@ -1,22 +1,22 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   class WebhooksManager
     class << self
       def queue_create(shop_domain, shop_token)
-        ShopifyGraphQL::CreateWebhooksJob.perform_later(
+        ShopifyGraphql::CreateWebhooksJob.perform_later(
           shop_domain: shop_domain,
           shop_token: shop_token,
         )
       end
 
       def queue_destroy(shop_domain, shop_token)
-        ShopifyGraphQL::DestroyWebhooksJob.perform_later(
+        ShopifyGraphql::DestroyWebhooksJob.perform_later(
           shop_domain: shop_domain,
           shop_token: shop_token,
         )
       end
 
       def queue_update(shop_domain, shop_token)
-        ShopifyGraphQL::UpdateWebhooksJob.perform_later(
+        ShopifyGraphql::UpdateWebhooksJob.perform_later(
           shop_domain: shop_domain,
           shop_token: shop_token,
         )
@@ -47,7 +47,7 @@ module ShopifyGraphQL
       return unless webhooks_enabled?
 
       current_webhooks.each do |webhook|
-        ShopifyGraphQL::Webhook.delete(webhook.id)
+        ShopifyGraphql::Webhook.delete(webhook.id)
       end
 
       @current_webhooks = nil
@@ -56,16 +56,16 @@ module ShopifyGraphQL
     private
 
     def webhooks_enabled?
-      if ShopifyGraphQL.configuration.webhook_enabled_environments.include?(Rails.env)
+      if ShopifyGraphql.configuration.webhook_enabled_environments.include?(Rails.env)
         true
       else
-        Rails.logger.info("[ShopifyGraphQL] Webhooks disabled in #{Rails.env} environment. Check you config.")
+        Rails.logger.info("[ShopifyGraphql] Webhooks disabled in #{Rails.env} environment. Check you config.")
         false
       end
     end
 
     def create_webhook(attributes)
-      ShopifyGraphQL::Webhook.create(
+      ShopifyGraphql::Webhook.create(
         topic: attributes[:topic],
         address: attributes[:address],
         include_fields: attributes[:include_fields],
@@ -79,7 +79,7 @@ module ShopifyGraphQL
     end
 
     def current_webhooks
-      @current_webhooks ||= ShopifyGraphQL::Webhook.all
+      @current_webhooks ||= ShopifyGraphql::Webhook.all
     end
   end
 end

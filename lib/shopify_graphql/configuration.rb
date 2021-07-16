@@ -1,4 +1,4 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   class Configuration
     attr_accessor :webhooks
     attr_accessor :webhook_jobs_namespace

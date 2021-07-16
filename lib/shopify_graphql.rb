@@ -25,4 +25,4 @@ require 'shopify_graphql/managers/webhooks_manager'
 require 'shopify_graphql/resources/shop'
 require 'shopify_graphql/resources/webhook'
 
-ShopifyGraphql = ShopifyGraphQL
+ShopifyGraphql = ShopifyGraphql

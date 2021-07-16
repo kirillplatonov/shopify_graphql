@@ -1,4 +1,4 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   module Resource
     extend ActiveSupport::Concern
 
@@ -6,7 +6,7 @@ module ShopifyGraphQL
       delegate :execute, :handle_user_errors, to: :client
 
       def client
-        ShopifyGraphQL::Client.new
+        ShopifyGraphql::Client.new
       end
     end
   end

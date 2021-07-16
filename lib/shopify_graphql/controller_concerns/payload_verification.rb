@@ -1,4 +1,4 @@
-module ShopifyGraphQL
+module ShopifyGraphql
   module PayloadVerification
     extend ActiveSupport::Concern
 
