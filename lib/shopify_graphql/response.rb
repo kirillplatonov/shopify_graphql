@@ -1,9 +1,10 @@
 module ShopifyGraphql
   class Response
-    attr_reader :response, :data, :extensions, :errors
+    attr_reader :raw, :extensions, :errors
+    attr_accessor :data
 
     def initialize(response)
-      @response = response
+      @raw = response
       @data = response.data
       @extensions = response.extensions
       @errors = response.errors

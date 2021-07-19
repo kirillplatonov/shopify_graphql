@@ -4,7 +4,8 @@ module ShopifyGraphql
       @api_version = api_version
     end
 
-    def execute(query, variables: nil, operation_name: nil)
+    def execute(query, **variables)
+      operation_name = variables.delete(:operation_name)
       response = connection.post do |req|
         req.body = {
           query: query,
@@ -71,8 +72,8 @@ module ShopifyGraphql
 
       error = response.errors.first
       error_message = error.message
-      error_code = error.extensions.code
-      error_doc = error.extensions.documentation
+      error_code = error.extensions&.code
+      error_doc = error.extensions&.documentation
 
       case error_code
       when "THROTTLED"
