@@ -89,8 +89,9 @@ module ShopifyGraphql
       error = response.userErrors.first
       error_message = error.message
       error_fields = error.field
+      error_code = error.code
 
-      raise ClientError.new(response, error_message, fields: error_fields)
+      raise UserError.new(response, error_message, fields: error_fields, code: error_code)
     end
   end
 

@@ -64,6 +64,10 @@ module ShopifyGraphql
   class TooManyRequests < ClientError # :nodoc:
   end
 
+  # Graphql userErrors
+  class UserError < ClientError # :nodoc:
+  end
+
   # 5xx Server Error
   class ServerError < ConnectionError
   end
