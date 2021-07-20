@@ -1,6 +1,6 @@
 module ShopifyGraphql
   class ConnectionError < StandardError
-    attr_reader :response
+    attr_reader :response, :code, :doc, :fields
 
     def initialize(response, message = nil, code: nil, doc: nil, fields: nil)
       @response = response
