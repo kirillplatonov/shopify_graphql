@@ -1,7 +1,7 @@
 module ShopifyGraphql
   class MissingWebhookJobError < StandardError; end
 
-  class WebhooksController < ActionController::Base
+  class GraphqlWebhooksController < ActionController::Base
     include ShopifyGraphql::WebhookVerification
 
     def receive

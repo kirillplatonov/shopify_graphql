@@ -1,5 +1,5 @@
 ShopifyGraphql::Engine.routes.draw do
-  namespace :webhooks do
+  namespace :graphql_webhooks do
     post ':type' => :receive
   end
 end
