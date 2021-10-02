@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+VERSION=$1
+
+if [ -z $1 ] ; then
+  echo "Please provide version number: bin/release 1.0.0" && exit 1;
+fi
+
+printf "module ShopifyGraphql\n  VERSION = \"$VERSION\"\nend\n" > ./lib/shopify_graphql/version.rb
+bundle
+git add Gemfile.lock lib/shopify_graphql/version.rb
+git commit -m "Bump version for $VERSION"
+git push
+git tag v$VERSION
+git push --tags
+gem build shopify_graphql.gemspec
+gem push "shopify_graphql-$VERSION.gem"
