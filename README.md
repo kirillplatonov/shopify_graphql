@@ -257,6 +257,8 @@ ShopifyGraphql.configure do |config|
 end
 ```
 
+You can also use `WEBHOOKS_ENABLED=true` env variable to enable webhooks (useful in development).
+
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
