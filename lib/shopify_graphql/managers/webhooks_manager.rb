@@ -55,8 +55,12 @@ module ShopifyGraphql
 
     private
 
+    def webhook_environments
+      ShopifyGraphql.configuration.webhook_enabled_environments
+    end
+
     def webhooks_enabled?
-      if ShopifyGraphql.configuration.webhook_enabled_environments.include?(Rails.env)
+      if webhook_environments.include?(Rails.env) || ActiveModel::Type::Boolean.new.cast(ENV["WEBHOOKS_ENABLED"])
         true
       else
         Rails.logger.info("[ShopifyGraphql] Webhooks disabled in #{Rails.env} environment. Check you config.")
