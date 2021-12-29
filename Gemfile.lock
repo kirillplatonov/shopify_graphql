@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    shopify_graphql (0.1.1)
+    shopify_graphql (0.2.0)
       faraday (>= 1.0)
       faraday_middleware
       rails (>= 5.2.0, < 8.0.0)
@@ -218,7 +218,7 @@ GEM
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    zeitwerk (2.5.1)
+    zeitwerk (2.5.2)
 
 PLATFORMS
   arm64-darwin-20
