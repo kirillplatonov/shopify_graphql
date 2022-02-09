@@ -17,7 +17,8 @@ class MutationsTest < ActiveSupport::TestCase
 
     response = ShopifyGraphql.execute(SIMPLE_MUTATION)
     product = response.data.productDuplicate.newProduct
-    assert_equal "gid://shopify/Product/6708088832083", product.id
+
+    assert_not_nil product.id
     assert_equal "Test product duplicate", product.title
   end
 end
