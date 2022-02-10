@@ -93,10 +93,6 @@ GEM
       rexml
     crass (1.0.6)
     digest (3.1.0)
-    dotenv (2.7.6)
-    dotenv-rails (2.7.6)
-      dotenv (= 2.7.6)
-      railties (>= 3.2)
     erubi (1.10.0)
     faraday (1.9.3)
       faraday-em_http (~> 1.0)
@@ -164,6 +160,8 @@ GEM
       timeout
     nio4r (2.5.8)
     nokogiri (1.13.1-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.13.1-x86_64-linux)
       racc (~> 1.4)
     oauth2 (1.4.7)
       faraday (>= 0.8, < 2.0)
@@ -247,7 +245,6 @@ GEM
     timeout (0.2.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    vcr (6.0.0)
     webmock (3.14.0)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -260,13 +257,12 @@ GEM
 PLATFORMS
   arm64-darwin-20
   arm64-darwin-21
+  x86_64-linux
 
 DEPENDENCIES
-  dotenv-rails
   shopify_graphql!
   sprockets-rails
   sqlite3
-  vcr
   webmock
 
 BUNDLED WITH
