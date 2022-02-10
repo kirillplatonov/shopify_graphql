@@ -1,3 +1,4 @@
+require 'shopify_api'
 require 'faraday'
 require 'faraday_middleware'
 

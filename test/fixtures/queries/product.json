@@ -1,0 +1,19 @@
+{
+  "data": {
+    "product": {
+      "title": "Test product",
+      "status": "DRAFT"
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 1,
+      "actualQueryCost": 1,
+      "throttleStatus": {
+        "maximumAvailable": 1000,
+        "currentlyAvailable": 999,
+        "restoreRate": 50
+      }
+    }
+  }
+}

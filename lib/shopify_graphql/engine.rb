@@ -17,7 +17,7 @@ module ShopifyGraphql
     engine_name 'shopify_graphql'
     isolate_namespace ShopifyGraphql
 
-    initializer "shopify_app.redact_job_params" do
+    initializer "shopify_graphql.redact_job_params" do
       ActiveSupport.on_load(:active_job) do
         if ActiveJob::Base.respond_to?(:log_arguments?)
           CreateWebhooksJob.log_arguments = false

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "shop": {
+      "id": "gid://shopify/Shop/55755538515",
+      "name": "Graphql Gem Test",
+      "myshopifyDomain": "graphql-gem-test.myshopify.com"
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 1,
+      "actualQueryCost": 1,
+      "throttleStatus": {
+        "maximumAvailable": 1000,
+        "currentlyAvailable": 999,
+        "restoreRate": 50
+      }
+    }
+  }
+}

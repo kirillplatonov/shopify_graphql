@@ -1,0 +1,21 @@
+{
+  "data": {
+    "productDuplicate": {
+      "newProduct": {
+        "id": "gid://shopify/Product/6708088832083",
+        "title": "Test product duplicate"
+      }
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 10,
+      "actualQueryCost": 10,
+      "throttleStatus": {
+        "maximumAvailable": 1000,
+        "currentlyAvailable": 990,
+        "restoreRate": 50
+      }
+    }
+  }
+}
