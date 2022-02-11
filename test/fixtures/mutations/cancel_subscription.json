@@ -1,0 +1,21 @@
+{
+  "data": {
+    "appSubscriptionCancel": {
+      "appSubscription": {
+        "id": "gid://shopify/AppSubscription/22229909587"
+      },
+      "userErrors": []
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 10,
+      "actualQueryCost": 10,
+      "throttleStatus": {
+        "maximumAvailable": 1000,
+        "currentlyAvailable": 990,
+        "restoreRate": 50
+      }
+    }
+  }
+}
