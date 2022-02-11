@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    shopify_graphql (0.2.0)
+    shopify_graphql (0.3.0)
       faraday (>= 1.0)
       faraday_middleware
       rails (>= 5.2.0)
