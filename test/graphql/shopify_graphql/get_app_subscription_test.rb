@@ -6,7 +6,7 @@ class GetAppSubscriptionTest < ActiveSupport::TestCase
     fake("queries/app_subscription.json", ShopifyGraphql::GetAppSubscription::QUERY, id: app_subscription_gid)
 
     response = ShopifyGraphql::GetAppSubscription.call(id: app_subscription_gid)
-    subscription = response.data
+    subscription = response.data.subscription
 
     assert_equal "Standard Plan", subscription.name
     assert_equal "PENDING", subscription.status

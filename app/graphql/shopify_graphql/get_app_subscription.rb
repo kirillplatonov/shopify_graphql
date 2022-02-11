@@ -14,8 +14,16 @@ module ShopifyGraphql
 
     def call(id:)
       response = execute(QUERY, id: id)
-      response.data = AppSubscriptionFields.parse(response.data.node)
+      response.data = parse_data(response.data)
       response
+    end
+
+    private
+
+    def parse_data(data)
+      OpenStruct.new(
+        subscription: AppSubscriptionFields.parse(data.node),
+      )
     end
   end
 end
