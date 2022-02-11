@@ -21,6 +21,10 @@ module ShopifyGraphql
     private
 
     def parse_data(data)
+      unless data.node
+        raise ResourceNotFound.new(200, "Subscription not found")
+      end
+
       OpenStruct.new(
         subscription: AppSubscriptionFields.parse(data.node),
       )
