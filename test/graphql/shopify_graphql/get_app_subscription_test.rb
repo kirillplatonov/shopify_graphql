@@ -2,10 +2,14 @@ require "test_helper"
 
 class GetAppSubscriptionTest < ActiveSupport::TestCase
   test "returns subscription" do
-    app_subscription_gid = "gid://shopify/AppSubscription/22229811283"
-    fake("queries/app_subscription.json", ShopifyGraphql::GetAppSubscription::QUERY, id: app_subscription_gid)
+    subscription_id = "gid://shopify/AppSubscription/22229811283"
+    fake(
+      "queries/app_subscription.json",
+      ShopifyGraphql::GetAppSubscription::QUERY,
+      id: subscription_id
+    )
 
-    response = ShopifyGraphql::GetAppSubscription.call(id: app_subscription_gid)
+    response = ShopifyGraphql::GetAppSubscription.call(id: subscription_id)
     subscription = response.data.subscription
 
     assert_equal "Standard Plan", subscription.name

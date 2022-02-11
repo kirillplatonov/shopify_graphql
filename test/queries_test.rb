@@ -30,10 +30,10 @@ class QueriesTest < ActiveSupport::TestCase
   end
 
   test "query with params" do
-    product_gid = "gid://shopify/Product/6708081623123"
-    fake("queries/product.json", QUERY_WITH_VARIABLES, id: product_gid)
+    product_id = "gid://shopify/Product/6708081623123"
+    fake("queries/product.json", QUERY_WITH_VARIABLES, id: product_id)
 
-    response = ShopifyGraphql.execute(QUERY_WITH_VARIABLES, id: product_gid)
+    response = ShopifyGraphql.execute(QUERY_WITH_VARIABLES, id: product_id)
     product = response.data.product
 
     assert_equal "Test product", product.title
