@@ -1,0 +1,42 @@
+{
+  "data": {
+    "appSubscriptionCreate": {
+      "appSubscription": {
+        "id": "gid://shopify/AppSubscription/22229811283",
+        "name": "Standard Plan",
+        "status": "PENDING",
+        "createdAt": "2022-02-11T06:04:04Z",
+        "trialDays": 3,
+        "currentPeriodEnd": null,
+        "test": true,
+        "lineItems": [
+          {
+            "id": "gid://shopify/AppSubscriptionLineItem/22229811283?v=1&index=0",
+            "plan": {
+              "pricingDetails": {
+                "__typename": "AppRecurringPricing",
+                "price": {
+                  "amount": "29.99"
+                },
+                "interval": "ANNUAL"
+              }
+            }
+          }
+        ]
+      },
+      "confirmationUrl": "https://graphql-gem-test.myshopify.com/admin/charges/6482851/22229811283/RecurringApplicationCharge/confirm_recurring_application_charge?signature=BAh7BzoHaWRsKwhTAAAtBQA6EmF1dG9fYWN0aXZhdGVU--736eb13604129eb23a9aab793bd85fa9efcb7058",
+      "userErrors": []
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 13,
+      "actualQueryCost": 13,
+      "throttleStatus": {
+        "maximumAvailable": 1000,
+        "currentlyAvailable": 987,
+        "restoreRate": 50
+      }
+    }
+  }
+}

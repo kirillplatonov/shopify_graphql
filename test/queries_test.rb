@@ -11,7 +11,7 @@ class QueriesTest < ActiveSupport::TestCase
     }
   GRAPHQL
 
-  QUERY_WITH_PARAMS = <<~GRAPHQL
+  QUERY_WITH_VARIABLES = <<~GRAPHQL
     query($id: ID!) {
       product(id: $id) {
         title
@@ -25,15 +25,17 @@ class QueriesTest < ActiveSupport::TestCase
 
     response = ShopifyGraphql.execute(SIMPLE_QUERY)
     shop = response.data.shop
+
     assert_equal "Graphql Gem Test", shop.name
   end
 
   test "query with params" do
     product_gid = "gid://shopify/Product/6708081623123"
-    fake("queries/product.json", QUERY_WITH_PARAMS, id: product_gid)
+    fake("queries/product.json", QUERY_WITH_VARIABLES, id: product_gid)
 
-    response = ShopifyGraphql.execute(QUERY_WITH_PARAMS, id: product_gid)
+    response = ShopifyGraphql.execute(QUERY_WITH_VARIABLES, id: product_gid)
     product = response.data.product
+
     assert_equal "Test product", product.title
     assert_equal "DRAFT", product.status
   end

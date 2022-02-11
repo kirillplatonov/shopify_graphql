@@ -1,0 +1,38 @@
+{
+  "data": {
+    "node": {
+      "id": "gid://shopify/AppSubscription/22229811283",
+      "name": "Standard Plan",
+      "status": "PENDING",
+      "createdAt": "2022-02-11T06:04:04Z",
+      "trialDays": 3,
+      "currentPeriodEnd": null,
+      "test": true,
+      "lineItems": [
+        {
+          "id": "gid://shopify/AppSubscriptionLineItem/22229811283?v=1&index=0",
+          "plan": {
+            "pricingDetails": {
+              "__typename": "AppRecurringPricing",
+              "price": {
+                "amount": "29.99"
+              },
+              "interval": "ANNUAL"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 4,
+      "actualQueryCost": 4,
+      "throttleStatus": {
+        "maximumAvailable": 1000,
+        "currentlyAvailable": 996,
+        "restoreRate": 50
+      }
+    }
+  }
+}
