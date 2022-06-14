@@ -1,5 +1,15 @@
 module ShopifyGraphql
   class Client
+    RETRIABLE_EXCEPTIONS = [
+      Errno::ETIMEDOUT,
+      Errno::ECONNREFUSED,
+      'Timeout::Error',
+      Faraday::TimeoutError,
+      Faraday::RetriableResponse,
+      Faraday::ParsingError,
+      Faraday::ConnectionFailed,
+    ].freeze
+
     def initialize(api_version = ShopifyAPI::Base.api_version)
       @api_version = api_version
     end
@@ -29,6 +39,7 @@ module ShopifyGraphql
       @connection ||= Faraday.new(url: api_url, headers: request_headers) do |conn|
         conn.request :json
         conn.response :json, parser_options: { object_class: OpenStruct }
+        conn.request :retry, max: 3, interval: 1, backoff_factor: 2, exceptions: RETRIABLE_EXCEPTIONS
       end
     end
 
