@@ -3,6 +3,7 @@ module ShopifyGraphql
     RETRIABLE_EXCEPTIONS = [
       Errno::ETIMEDOUT,
       Errno::ECONNREFUSED,
+      Errno::EHOSTUNREACH,
       'Timeout::Error',
       Faraday::TimeoutError,
       Faraday::RetriableResponse,
