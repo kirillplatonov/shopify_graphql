@@ -2,7 +2,7 @@
 
 Less painful way to work with [Shopify Graphql API](https://shopify.dev/api/admin/graphql/reference) in Ruby.
 
-> **This library is under active development. Breaking changes are likely until stable release.**
+> **NOTE: The library only supports `shopify_api` < 10.0 at the moment.**
 
 ## Features
 
