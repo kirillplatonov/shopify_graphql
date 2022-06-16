@@ -10,8 +10,8 @@ Less painful way to work with [Shopify Graphql API](https://shopify.dev/api/admi
 - Graphql webhooks integration
 - Built-in error handling
 - No schema and no memory issues
+- Buil-in retry on error
 - (Planned) Testing helpers
-- (Planned) Buil-in retry on error
 - (Planned) Pre-built calls for common Graphql operations
 
 ## Usage
