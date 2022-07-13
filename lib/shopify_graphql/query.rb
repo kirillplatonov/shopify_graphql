@@ -2,8 +2,8 @@ module ShopifyGraphql::Query
   extend ActiveSupport::Concern
 
   class_methods do
-    def call(**kwargs)
-      new.call(**kwargs)
+    def call(**kwargs, &block)
+      new.call(**kwargs, &block)
     end
   end
 
