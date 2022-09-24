@@ -231,8 +231,8 @@ shopify_subscription = response.subscription
 ## Installation
 
 In Gemfile, add:
-```
-gem 'shopify_graphql', github: 'kirillplatonov/shopify_graphql', branch: 'main'
+```rb
+gem "shopify_graphql"
 ```
 
 This gem relies on `shopify_app` for authentication so no extra setup is required. But you still need to wrap your Graphql calls with `shop.with_shopify_session`:
