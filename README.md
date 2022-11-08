@@ -256,6 +256,11 @@ ShopifyGraphql.configure do |config|
   ]
 end
 ```
+Add the following to
+`config/routes.rb`:
+```ruby
+mount ShopifyGraphql::Engine, at: '/'
+```
 
 You can also use `WEBHOOKS_ENABLED=true` env variable to enable webhooks (useful in development).
 
