@@ -242,6 +242,32 @@ shop.with_shopify_session do
 end
 ```
 
+To register webhooks for shop after app installation you have to call `ShopifyGraphql::UpdateWebhooksJob`. The best way to do it is in `AfterInstallJob`:
+```rb
+# config/initializers/shopify_app.rb
+ShopifyApp.configure do |config|
+  # ...
+  config.after_authenticate_job = {job: "AfterAuthenticateJob", inline: true}
+end
+```
+
+```rb
+# app/jobs/after_install_job.rb
+class AfterInstallJob < ApplicationJob
+  def perform(shop)
+    # ...
+    update_webhooks(shop)
+  end
+  
+  def update_webhooks(shop)
+    ShopifyGraphql::UpdateWebhooksJob.perform_later(
+      shop_domain: shop.shopify_domain,
+      shop_token: shop.shopify_token
+    )
+  end
+end
+```
+
 The gem has built-in support for graphql webhooks (similar to `shopify_app`). To enable it add the following config to `config/initializers/shopify_app.rb`:
 ```ruby
 ShopifyGraphql.configure do |config|
@@ -256,8 +282,8 @@ ShopifyGraphql.configure do |config|
   ]
 end
 ```
-Add the following to
-`config/routes.rb`:
+
+Add the following to `config/routes.rb`:
 ```ruby
 mount ShopifyGraphql::Engine, at: '/'
 ```
