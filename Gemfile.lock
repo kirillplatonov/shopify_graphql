@@ -4,7 +4,7 @@ PATH
     shopify_graphql (0.4.2)
       faraday (>= 1.0)
       faraday_middleware
-      rails (>= 5.2.0)
+      rails (>= 6.0.0)
       shopify_api (< 10.0)
       shopify_app (> 17.0)
 

@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir["{app,config,lib}/**/*", "LICENSE.txt", "README.md"]
 
   spec.required_ruby_version = ">= 2.7.0"
-  spec.add_dependency "rails", ">= 5.2.0"
+  spec.add_dependency "rails", ">= 6.0.0"
   spec.add_dependency "shopify_api", "< 10.0"
   spec.add_dependency "shopify_app", "> 17.0"
   spec.add_dependency "faraday", ">= 1.0"
