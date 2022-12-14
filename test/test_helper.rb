@@ -20,23 +20,18 @@ end
 
 class ActiveSupport::TestCase
   setup do
-    session = ShopifyAPI::Session.new(
-      domain: "https://test-shop.myshopify.com",
-      token: "test-token",
-      api_version: "2020-01",
-    )
-    ShopifyAPI::Base.activate_session(session)
+    session = ShopifyAPI::Auth::Session.new(shop: "test-shop.myshopify.com", access_token: "test-token")
+    ShopifyAPI::Context.activate_session(session)
   end
 
   teardown do
-    ShopifyAPI::Base.clear_session
+    ShopifyAPI::Context.deactivate_session
   end
 
   def fake(fixture_path, query, **variables)
-    api_path = "https://test-shop.myshopify.com/admin/api/2020-01/graphql.json"
+    api_path = "https://test-shop.myshopify.com/admin/api/2022-10/graphql.json"
     fixture = File.read File.expand_path("fixtures/#{fixture_path}", __dir__)
-    operation_name = variables.delete(:operation_name)
-    body = { query: query, operationName: operation_name, variables: variables }
+    body = { query: query, variables: variables }
 
     stub_request(:post, api_path)
       .with(body: body)

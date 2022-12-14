@@ -1,6 +1,4 @@
 require 'shopify_api'
-require 'faraday'
-require 'faraday_middleware'
 
 require 'shopify_graphql/client'
 require 'shopify_graphql/configuration'

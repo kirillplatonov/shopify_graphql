@@ -1,12 +1,10 @@
 PATH
   remote: .
   specs:
-    shopify_graphql (0.4.2)
-      faraday (>= 1.0)
-      faraday_middleware
+    shopify_graphql (1.0.0)
       rails (>= 6.0.0)
-      shopify_api (< 10.0)
-      shopify_app (> 17.0)
+      shopify_api (>= 10.0)
+      shopify_app (>= 19.0)
 
 GEM
   remote: https://rubygems.org/
@@ -94,39 +92,13 @@ GEM
     crass (1.0.6)
     date (3.3.1)
     erubi (1.11.0)
-    faraday (1.10.2)
-      faraday-em_http (~> 1.0)
-      faraday-em_synchrony (~> 1.0)
-      faraday-excon (~> 1.1)
-      faraday-httpclient (~> 1.0)
-      faraday-multipart (~> 1.0)
-      faraday-net_http (~> 1.0)
-      faraday-net_http_persistent (~> 1.0)
-      faraday-patron (~> 1.0)
-      faraday-rack (~> 1.0)
-      faraday-retry (~> 1.0)
-      ruby2_keywords (>= 0.0.4)
-    faraday-em_http (1.0.0)
-    faraday-em_synchrony (1.0.0)
-    faraday-excon (1.1.0)
-    faraday-httpclient (1.0.1)
-    faraday-multipart (1.0.4)
-      multipart-post (~> 2)
-    faraday-net_http (1.0.1)
-    faraday-net_http_persistent (1.2.0)
-    faraday-patron (1.0.0)
-    faraday-rack (1.0.0)
-    faraday-retry (1.0.3)
-    faraday_middleware (1.2.0)
-      faraday (~> 1.0)
     globalid (1.0.0)
       activesupport (>= 5.0)
-    graphql (2.0.15)
-    graphql-client (0.18.0)
-      activesupport (>= 3.0)
-      graphql
+    hash_diff (1.1.1)
     hashdiff (1.0.1)
-    hashie (5.0.0)
+    httparty (0.20.0)
+      mime-types (~> 3.0)
+      multi_xml (>= 0.5.2)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     jwt (2.5.0)
@@ -140,10 +112,12 @@ GEM
       net-smtp
     marcel (1.0.2)
     method_source (1.0.0)
+    mime-types (3.4.1)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2022.0105)
     mini_mime (1.1.2)
     minitest (5.16.3)
     multi_xml (0.6.0)
-    multipart-post (2.2.3)
     net-imap (0.3.2)
       date
       net-protocol
@@ -158,31 +132,11 @@ GEM
       racc (~> 1.4)
     nokogiri (1.13.10-x86_64-linux)
       racc (~> 1.4)
-    oauth2 (2.0.9)
-      faraday (>= 0.17.3, < 3.0)
-      jwt (>= 1.0, < 3.0)
-      multi_xml (~> 0.5)
-      rack (>= 1.2, < 4)
-      snaky_hash (~> 2.0)
-      version_gem (~> 1.1)
-    omniauth (2.1.0)
-      hashie (>= 3.4.6)
-      rack (>= 2.2.3)
-      rack-protection
-    omniauth-oauth2 (1.8.0)
-      oauth2 (>= 1.4, < 3)
-      omniauth (~> 2.0)
-    omniauth-rails_csrf_protection (1.0.1)
-      actionpack (>= 4.2)
-      omniauth (~> 2.0)
-    omniauth-shopify-oauth2 (2.3.2)
-      activesupport
-      omniauth-oauth2 (~> 1.5)
+    oj (3.13.23)
+    openssl (3.0.1)
     public_suffix (5.0.1)
     racc (1.6.1)
     rack (2.2.4)
-    rack-protection (3.0.4)
-      rack
     rack-test (2.0.2)
       rack (>= 1.3)
     rails (7.0.4)
@@ -215,22 +169,27 @@ GEM
     redirect_safely (1.0.0)
       activemodel
     rexml (3.2.5)
-    ruby2_keywords (0.0.5)
-    shopify_api (9.5.1)
-      activeresource (>= 4.1.0)
-      graphql-client
-      rack
-    shopify_app (18.1.3)
+    securerandom (0.2.1)
+    shopify_api (12.3.0)
+      activesupport
+      concurrent-ruby
+      hash_diff
+      httparty
+      jwt
+      oj
+      openssl
+      securerandom
+      sorbet-runtime
+      zeitwerk (~> 2.5, < 2.6.5)
+    shopify_app (21.3.0)
+      activeresource
       browser_sniffer (~> 2.0)
       jwt (>= 2.2.3)
-      omniauth-rails_csrf_protection
-      omniauth-shopify-oauth2 (~> 2.3)
       rails (> 5.2.1)
       redirect_safely (~> 1.0)
-      shopify_api (~> 9.4)
-    snaky_hash (2.0.1)
-      hashie
-      version_gem (~> 1.1, >= 1.1.1)
+      shopify_api (~> 12.3)
+      sprockets-rails (>= 2.0.0)
+    sorbet-runtime (0.5.10588)
     sprockets (4.1.1)
       concurrent-ruby (~> 1.0)
       rack (> 1, < 3)
@@ -244,7 +203,6 @@ GEM
     timeout (0.3.1)
     tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
-    version_gem (1.1.1)
     webmock (3.18.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -252,7 +210,7 @@ GEM
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    zeitwerk (2.6.6)
+    zeitwerk (2.6.4)
 
 PLATFORMS
   arm64-darwin-22

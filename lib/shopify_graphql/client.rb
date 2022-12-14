@@ -1,81 +1,54 @@
 module ShopifyGraphql
   class Client
-    RETRIABLE_EXCEPTIONS = [
-      Errno::ETIMEDOUT,
-      Errno::ECONNREFUSED,
-      Errno::EHOSTUNREACH,
-      'Timeout::Error',
-      Faraday::TimeoutError,
-      Faraday::RetriableResponse,
-      Faraday::ParsingError,
-      Faraday::ConnectionFailed,
-    ].freeze
-
-    def initialize(api_version = ShopifyAPI::Base.api_version)
-      @api_version = api_version
+    def client
+      @client ||= ShopifyAPI::Clients::Graphql::Admin.new(session: ShopifyAPI::Context.active_session)
     end
 
     def execute(query, **variables)
-      operation_name = variables.delete(:operation_name)
-      response = connection.post do |req|
-        req.body = {
-          query: query,
-          operationName: operation_name,
-          variables: variables,
-        }.to_json
-      end
-      response = handle_response(response)
-      ShopifyGraphql::Response.new(response)
+      response = client.query(query: query, variables: variables)
+      ShopifyGraphql::Response.new(handle_response(response))
     end
 
-    def api_url
-      [ShopifyAPI::Base.site, @api_version.construct_graphql_path].join
-    end
-
-    def request_headers
-      ShopifyAPI::Base.headers
-    end
-
-    def connection
-      @connection ||= Faraday.new(url: api_url, headers: request_headers) do |conn|
-        conn.request :json
-        conn.response :json, parser_options: { object_class: OpenStruct }
-        conn.request :retry, max: 3, interval: 1, backoff_factor: 2, exceptions: RETRIABLE_EXCEPTIONS
+    def parsed_body(response)
+      if response.body.is_a?(Hash)
+        JSON.parse(response.body.to_json, object_class: OpenStruct)
+      else
+        response.body
       end
     end
 
     def handle_response(response)
-      case response.status
+      case response.code
       when 200..400
-        handle_graphql_errors(response.body)
+        handle_graphql_errors(parsed_body(response))
       when 400
-        raise BadRequest.new(response.body, code: response.status)
+        raise BadRequest.new(parsed_body(response), code: response.code)
       when 401
-        raise UnauthorizedAccess.new(response.body, code: response.status)
+        raise UnauthorizedAccess.new(parsed_body(response), code: response.code)
       when 402
-        raise PaymentRequired.new(response.body, code: response.status)
+        raise PaymentRequired.new(parsed_body(response), code: response.code)
       when 403
-        raise ForbiddenAccess.new(response.body, code: response.status)
+        raise ForbiddenAccess.new(parsed_body(response), code: response.code)
       when 404
-        raise ResourceNotFound.new(response.body, code: response.status)
+        raise ResourceNotFound.new(parsed_body(response), code: response.code)
       when 405
-        raise MethodNotAllowed.new(response.body, code: response.status)
+        raise MethodNotAllowed.new(parsed_body(response), code: response.code)
       when 409
-        raise ResourceConflict.new(response.body, code: response.status)
+        raise ResourceConflict.new(parsed_body(response), code: response.code)
       when 410
-        raise ResourceGone.new(response.body, code: response.status)
+        raise ResourceGone.new(parsed_body(response), code: response.code)
       when 412
-        raise PreconditionFailed.new(response.body, code: response.status)
+        raise PreconditionFailed.new(parsed_body(response), code: response.code)
       when 422
-        raise ResourceInvalid.new(response.body, code: response.status)
+        raise ResourceInvalid.new(parsed_body(response), code: response.code)
       when 429
-        raise TooManyRequests.new(response.body, code: response.status)
+        raise TooManyRequests.new(parsed_body(response), code: response.code)
       when 401...500
-        raise ClientError.new(response.body, code: response.status)
+        raise ClientError.new(parsed_body(response), code: response.code)
       when 500...600
-        raise ServerError.new(response.body, code: response.status)
+        raise ServerError.new(parsed_body(response), code: response.code)
       else
-        raise ConnectionError.new(response.body, "Unknown response code: #{response.status}")
+        raise ConnectionError.new(parsed_body(response), "Unknown response code: #{response.code}")
       end
     end
 
@@ -110,8 +83,8 @@ module ShopifyGraphql
   class << self
     delegate :execute, :handle_user_errors, to: :client
 
-    def client(api_version = ShopifyAPI::Base.api_version)
-      Client.new(api_version)
+    def client
+      Client.new
     end
   end
 end

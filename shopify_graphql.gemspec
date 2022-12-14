@@ -23,8 +23,6 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = ">= 2.7.0"
   spec.add_dependency "rails", ">= 6.0.0"
-  spec.add_dependency "shopify_api", "< 10.0"
-  spec.add_dependency "shopify_app", "> 17.0"
-  spec.add_dependency "faraday", ">= 1.0"
-  spec.add_dependency "faraday_middleware"
+  spec.add_dependency "shopify_api", ">= 10.0"
+  spec.add_dependency "shopify_app", ">= 19.0"
 end
