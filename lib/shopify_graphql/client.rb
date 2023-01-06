@@ -7,6 +7,8 @@ module ShopifyGraphql
     def execute(query, **variables)
       response = client.query(query: query, variables: variables)
       ShopifyGraphql::Response.new(handle_response(response))
+    rescue ShopifyAPI::Errors::HttpResponseError => e
+      ShopifyGraphql::Response.new(handle_response(e.response))
     end
 
     def parsed_body(response)
