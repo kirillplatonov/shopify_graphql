@@ -5,10 +5,9 @@ module ShopifyGraphql
     end
 
     def perform(shop_domain:, shop_token:)
-      api_version = ShopifyApp.configuration.api_version
       webhooks = ShopifyGraphql.configuration.webhooks
 
-      ShopifyAPI::Session.temp(domain: shop_domain, token: shop_token, api_version: api_version) do
+      ShopifyAPI::Auth::Session.temp(shop: shop_domain, access_token: shop_token) do
         manager = WebhooksManager.new(webhooks)
         manager.recreate_webhooks!
       end
