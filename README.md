@@ -1,29 +1,718 @@
 # Shopify Graphql
 
-Less painful way to work with [Shopify Graphql API](https://shopify.dev/api/admin/graphql/reference) in Ruby.
-
-> **NOTE: The library only supports `shopify_api` < 10.0 at the moment.**
+Less painful way to work with [Shopify Graphql API](https://shopify.dev/api/admin-graphql) in Ruby. This library is a tiny wrapper on top of [`shopify_api`](https://github.com/Shopify/shopify-api-ruby) gem. It provides a simple API for Graphql calls, better error handling, and Graphql webhooks integration.
 
 ## Features
 
-- Simple API for Graphql calls
-- Graphql webhooks integration
-- Built-in error handling
-- No schema and no memory issues
-- Built-in retry on error
-- (Planned) Testing helpers
-- (Planned) Pre-built calls for common Graphql operations
+- Simple API for Graphql queries and mutations
+- Conventions for organizing Graphql code
+- ActiveResource-like error handling
+- Graphql and user error handlers
+- Auto-conversion of responses to OpenStruct
+- Graphql webhooks integration for Rails
+- Wrappers for Graphql rate limit extensions
+- Built-in calls for common Graphql calls
 
-## Usage
+## Dependencies
 
-### Making Graphql calls directly
+- [`shopify_api`](https://github.com/Shopify/shopify-api-ruby) v10+
+- [`shopify_app`](https://github.com/Shopify/shopify_app) v19+
 
-```ruby
-CREATE_WEBHOOK_MUTATION = <<~GRAPHQL
-  mutation($topic: WebhookSubscriptionTopic!, $webhookSubscription: WebhookSubscriptionInput!) {
-    webhookSubscriptionCreate(topic: $topic, webhookSubscription: $webhookSubscription) {
-      webhookSubscription {
+> For `shopify_api` < v10 use [`0-4-stable`](https://github.com/kirillplatonov/shopify_graphql/tree/0-4-stable) branch.
+
+## Installation
+
+Add `shopify_graphql` to your Gemfile:
+
+```bash
+bundle add shopify_graphql
+```
+
+This gem relies on `shopify_app` for authentication so no extra setup is required. But you still need to wrap your Graphql calls with `shop.with_shopify_session`:
+
+```rb
+shop.with_shopify_session do
+  # your calls to graphql
+end
+```
+
+## Conventions
+
+To better organize your Graphql code use the following conventions:
+
+- Create wrappers for all of your queries and mutations to isolate them
+- Put all Graphql-related code into `app/graphql` folder
+- Use `Fields` suffix to name fields (eg `AppSubscriptionFields`)
+- Use `Get` prefix to name queries (eg `GetProducts` or `GetAppSubscription`)
+- Use imperative to name mutations (eg `CreateUsageSubscription` or `BulkUpdateVariants`)
+
+## Usage examples
+
+### Simple query
+
+<details><summary>Click to expand</summary>
+Definition:
+
+```rb
+# app/graphql/get_product.rb
+
+class GetProduct
+  include ShopifyGraphql::Query
+
+  QUERY = <<~GRAPHQL
+    query($id: ID!) {
+      product(id: $id) {
+        handle
+        title
+        description
+      }
+    }
+  GRAPHQL
+
+  def call(id:)
+    response = execute(QUERY, id: id)
+    response.data = response.data.product
+    response
+  end
+end
+```
+
+Usage:
+
+```rb
+product = GetProduct.call(id: "gid://shopify/Product/12345").data
+puts product.handle
+puts product.title
+```
+</details>
+
+### Query with data parsing
+
+<details><summary>Click to expand</summary>
+Definition:
+
+```rb
+# app/graphql/get_product.rb
+
+class GetProduct
+  include ShopifyGraphql::Query
+
+  QUERY = <<~GRAPHQL
+    query($id: ID!) {
+      product(id: $id) {
         id
+        title
+        featuredImage {
+          source: url
+        }
+      }
+    }
+  GRAPHQL
+
+  def call(id:)
+    response = execute(QUERY, id: id)
+    response.data = parse_data(response.data.product)
+    response
+  end
+
+  private
+
+  def parse_data(data)
+    OpenStruct.new(
+      id: data.id,
+      title: data.title,
+      featured_image: data.featuredImage&.source
+    )
+  end
+end
+```
+
+Usage:
+
+```rb
+product = GetProduct.call(id: "gid://shopify/Product/12345").data
+puts product.id
+puts product.title
+puts product.featured_image
+```
+</details>
+
+### Query with fields
+
+<details><summary>Click to expand</summary>
+Definition:
+
+```rb
+# app/graphql/product_fields.rb
+
+class ProductFields
+  FRAGMENT = <<~GRAPHQL
+    fragment ProductFields on Product {
+      id
+      title
+      featuredImage {
+        source: url
+      }
+    }
+  GRAPHQL
+
+  def self.parse(data)
+    OpenStruct.new(
+      id: data.id,
+      title: data.title,
+      featured_image: data.featuredImage&.source
+    )
+  end
+end
+```
+
+```rb
+# app/graphql/get_product.rb
+
+class GetProduct
+  include ShopifyGraphql::Query
+
+  QUERY = <<~GRAPHQL
+    #{ProductFields::FRAGMENT}
+
+    query($id: ID!) {
+      product(id: $id) {
+        ... ProductFields
+      }
+    }
+  GRAPHQL
+
+  def call(id:)
+    response = execute(QUERY, id: id)
+    response.data = ProductFields.parse(response.data.product)
+    response
+  end
+end
+```
+
+Usage:
+
+```rb
+product = GetProduct.call(id: "gid://shopify/Product/12345").data
+puts product.id
+puts product.title
+puts product.featured_image
+```
+</details>
+
+### Simple collection query
+
+<details><summary>Click to expand</summary>
+Definition:
+
+```rb
+# app/graphql/get_products.rb
+
+class GetProducts
+  include ShopifyGraphql::Query
+
+  QUERY = <<~GRAPHQL
+    query {
+      products(first: 5) {
+        edges {
+          node {
+            id
+            title
+            featuredImage {
+              source: url
+            }
+          }
+        }
+      }
+    }
+  GRAPHQL
+
+  def call
+    response = execute(QUERY)
+    response.data = parse_data(response.data.products.edges)
+    response
+  end
+
+  private
+
+  def parse_data(data)
+    return [] if data.blank?
+
+    data.compact.map do |edge|
+      OpenStruct.new(
+        id: edge.node.id,
+        title: edge.node.title,
+        featured_image: edge.node.featuredImage&.source
+      )
+    end
+  end
+end
+```
+
+Usage:
+
+```rb
+products = GetProducts.call.data
+products.each do |product|
+  puts product.id
+  puts product.title
+  puts product.featured_image
+end
+```
+</details>
+
+### Collection query with fields
+
+<details><summary>Click to expand</summary>
+Definition:
+
+```rb
+# app/graphql/product_fields.rb
+
+class ProductFields
+  FRAGMENT = <<~GRAPHQL
+    fragment ProductFields on Product {
+      id
+      title
+      featuredImage {
+        source: url
+      }
+    }
+  GRAPHQL
+
+  def self.parse(data)
+    OpenStruct.new(
+      id: data.id,
+      title: data.title,
+      featured_image: data.featuredImage&.source
+    )
+  end
+end
+```
+
+```rb
+# app/graphql/get_products.rb
+
+class GetProducts
+  include ShopifyGraphql::Query
+
+  QUERY = <<~GRAPHQL
+    #{ProductFields::FRAGMENT}
+
+    query {
+      products(first: 5) {
+        edges {
+          cursor
+          node {
+            ... ProductFields
+          }
+        }
+      }
+    }
+  GRAPHQL
+
+  def call
+    response = execute(QUERY)
+    response.data = parse_data(response.data.products.edges)
+    response
+  end
+
+  private
+
+  def parse_data(data)
+    return [] if data.blank?
+
+    data.compact.map do |edge|
+      OpenStruct.new(
+        cursor: edge.cursor,
+        node: ProductFields.parse(edge.node)
+      )
+    end
+  end
+end
+```
+
+Usage:
+
+```rb
+products = GetProducts.call.data
+products.each do |edge|
+  puts edge.cursor
+  puts edge.node.id
+  puts edge.node.title
+  puts edge.node.featured_image
+end
+```
+</details>
+
+### Collection query with pagination
+
+<details><summary>Click to expand</summary>
+Definition:
+
+```rb
+# app/graphql/product_fields.rb
+
+class ProductFields
+  FRAGMENT = <<~GRAPHQL
+    fragment ProductFields on Product {
+      id
+      title
+      featuredImage {
+        source: url
+      }
+    }
+  GRAPHQL
+
+  def self.parse(data)
+    OpenStruct.new(
+      id: data.id,
+      title: data.title,
+      featured_image: data.featuredImage&.source
+    )
+  end
+end
+```
+
+```rb
+# app/graphql/get_products.rb
+
+class GetProducts
+  include ShopifyGraphql::Query
+
+  LIMIT = 5
+  QUERY = <<~GRAPHQL
+    #{ProductFields::FRAGMENT}
+
+    query {
+      products(first: #{LIMIT}) {
+        edges {
+          node {
+            ... ProductFields
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  GRAPHQL
+  QUERY_WITH_CURSOR = <<~GRAPHQL
+    #{ProductFields::FRAGMENT}
+
+    query($cursor: String!) {
+      products(first: #{LIMIT}, after: $cursor) {
+        edges {
+          node {
+            ... ProductFields
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  GRAPHQL
+
+  def call
+    response = execute(QUERY)
+    data = parse_data(response.data.products.edges)
+
+    while response.data.products.pageInfo.hasNextPage
+      response = execute(QUERY_WITH_CURSOR, cursor: response.data.products.pageInfo.endCursor)
+      data += parse_data(response.data.products.edges)
+    end
+
+    response.data = data
+    response
+  end
+
+  private
+
+  def parse_data(data)
+    return [] if data.blank?
+
+    data.compact.map do |edge|
+      ProductFields.parse(edge.node)
+    end
+  end
+end
+```
+
+Usage:
+
+```rb
+products = GetProducts.call.data
+products.each do |product|
+  puts product.id
+  puts product.title
+  puts product.featured_image
+end
+```
+</details>
+
+### Collection query with block
+
+<details><summary>Click to expand</summary>
+Definition:
+
+```rb
+# app/graphql/product_fields.rb
+
+class ProductFields
+  FRAGMENT = <<~GRAPHQL
+    fragment ProductFields on Product {
+      id
+      title
+      featuredImage {
+        source: url
+      }
+    }
+  GRAPHQL
+
+  def self.parse(data)
+    OpenStruct.new(
+      id: data.id,
+      title: data.title,
+      featured_image: data.featuredImage&.source
+    )
+  end
+end
+```
+
+```rb
+# app/graphql/get_products.rb
+
+class GetProducts
+  include ShopifyGraphql::Query
+
+  LIMIT = 5
+  QUERY = <<~GRAPHQL
+    #{ProductFields::FRAGMENT}
+
+    query {
+      products(first: #{LIMIT}) {
+        edges {
+          node {
+            ... ProductFields
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  GRAPHQL
+  QUERY_WITH_CURSOR = <<~GRAPHQL
+    #{ProductFields::FRAGMENT}
+
+    query($cursor: String!) {
+      products(first: #{LIMIT}, after: $cursor) {
+        edges {
+          node {
+            ... ProductFields
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  GRAPHQL
+
+  def call(&block)
+    response = execute(QUERY)
+    response.data.products.edges.each do |edge|
+      block.call ProductFields.parse(edge.node)
+    end
+
+    while response.data.products.pageInfo.hasNextPage
+      response = execute(QUERY_WITH_CURSOR, cursor: response.data.products.pageInfo.endCursor)
+      response.data.products.edges.each do |edge|
+        block.call ProductFields.parse(edge.node)
+      end
+    end
+
+    response
+  end
+end
+```
+
+Usage:
+
+```rb
+GetProducts.call do |product|
+  puts product.id
+  puts product.title
+  puts product.featured_image
+end
+```
+</details>
+
+### Collection query with nested pagination
+
+<details><summary>Click to expand</summary>
+Definition:
+
+```rb
+# app/graphql/get_collections_with_products.rb
+
+class GetCollectionsWithProducts
+  include ShopifyGraphql::Query
+
+  COLLECTIONS_LIMIT = 1
+  PRODUCTS_LIMIT = 25
+  QUERY = <<~GRAPHQL
+    query {
+      collections(first: #{COLLECTIONS_LIMIT}) {
+        edges {
+          node {
+            id
+            title
+            products(first: #{PRODUCTS_LIMIT}) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  GRAPHQL
+  QUERY_WITH_CURSOR = <<~GRAPHQL
+    query ($cursor: String!) {
+      collections(first: #{COLLECTIONS_LIMIT}, after: $cursor) {
+        edges {
+          node {
+            id
+            title
+            products(first: #{PRODUCTS_LIMIT}) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  GRAPHQL
+
+  def call
+    response = execute(QUERY)
+    data = parse_data(response.data.collections.edges)
+
+    while response.data.collections.pageInfo.hasNextPage
+      response = execute(QUERY_WITH_CURSOR, cursor: response.data.collections.pageInfo.endCursor)
+      data += parse_data(response.data.collections.edges)
+    end
+
+    response.data = data
+    response
+  end
+
+  private
+
+  def parse_data(data)
+    return [] if data.blank?
+
+    data.compact.map do |edge|
+      OpenStruct.new(
+        id: edge.node.id,
+        title: edge.node.title,
+        products: edge.node.products.edges.map do |product_edge|
+          OpenStruct.new(id: product_edge.node.id)
+        end
+      )
+    end
+  end
+end
+```
+
+Usage:
+
+```rb
+collections = GetCollectionsWithProducts.call.data
+collections.each do |collection|
+  puts collection.id
+  puts collection.title
+  collection.products.each do |product|
+    puts product.id
+  end
+end
+```
+</details>
+
+### Mutation
+
+<details><summary>Click to expand</summary>
+
+Definition:
+
+```rb
+# app/graphql/update_product.rb
+
+class UpdateProduct
+  include ShopifyGraphql::Mutation
+
+  MUTATION = <<~GRAPHQL
+    mutation($input: ProductInput!) {
+      productUpdate(input: $input) {
+        product {
+          id
+          title
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  GRAPHQL
+
+  def call(input:)
+    response = execute(MUTATION, input: input)
+    response.data = response.data.productUpdate
+    handle_user_errors(response.data)
+    response
+  end
+end
+```
+
+Usage:
+
+```rb
+response = UpdateProduct.call(input: { id: "gid://shopify/Product/123", title: "New title" })
+puts response.data.product.title
+```
+</details>
+
+### Graphql call without wrapper
+
+<details><summary>Click to expand</summary>
+
+```rb
+PRODUCT_UPDATE_MUTATION = <<~GRAPHQL
+  mutation($input: ProductInput!) {
+    productUpdate(input: $input) {
+      product {
+        id
+        title
       }
       userErrors {
         field
@@ -33,216 +722,52 @@ CREATE_WEBHOOK_MUTATION = <<~GRAPHQL
   }
 GRAPHQL
 
-response = ShopifyGraphql.execute(CREATE_WEBHOOK_MUTATION,
-  topic: "TOPIC",
-  webhookSubscription: { callbackUrl: "ADDRESS", format: "JSON" },
+response = ShopifyGraphql.execute(
+  PRODUCT_UPDATE_MUTATION,
+  input: { id: "gid://shopify/Product/12345", title: "New title" }
 )
-response = response.data.webhookSubscriptionCreate
+response = response.data.productUpdate
 ShopifyGraphql.handle_user_errors(response)
 ```
+</details>
 
-### Creating wrappers for queries, mutations, and fields
+## Built-in Graphql calls
 
-To isolate Graphql boilerplate you can create wrappers. To keep them organized use the following conventions:
-- Put them all into `app/graphql` folder
-- Use `Fields` suffix to name fields (eg `AppSubscriptionFields`)
-- Use `Get` prefix to name queries (eg `GetProducts` or `GetAppSubscription`)
-- Use imperative to name mutations (eg `CreateUsageSubscription` or `BulkUpdateVariants`)
+- `ShopifyGraphql::CancelSubscription`
+- `ShopifyGraphql::CreateRecurringSubscription`
+- `ShopifyGraphql::CreateUsageSubscription`
+- `ShopifyGraphql::GetAppSubscription`
 
-#### Example fields
+Built-in wrappers are located in [`app/graphql/shopify_graphql`](/app/graphql/shopify_graphql/) folder. You can use them directly in your apps or as an example to create your own wrappers.
 
-Definition:
-```ruby
-class AppSubscriptionFields
-  FRAGMENT = <<~GRAPHQL
-    fragment AppSubscriptionFields on AppSubscription {
-      id
-      name
-      status
-      trialDays
-      currentPeriodEnd
-      test
-      lineItems {
-        id
-        plan {
-          pricingDetails {
-            __typename
-            ... on AppRecurringPricing {
-              price {
-                amount
-              }
-              interval
-            }
-            ... on AppUsagePricing {
-              balanceUsed {
-                amount
-              }
-              cappedAmount {
-                amount
-              }
-              interval
-              terms
-            }
-          }
-        }
-      }
-    }
-  GRAPHQL
+## Graphql webhooks
 
-  def self.parse(data)
-    recurring_line_item = data.lineItems.find { |i| i.plan.pricingDetails.__typename == "AppRecurringPricing" }
-    recurring_pricing = recurring_line_item&.plan&.pricingDetails
-    usage_line_item = data.lineItems.find { |i| i.plan.pricingDetails.__typename == "AppUsagePricing" }
-    usage_pricing = usage_line_item&.plan&.pricingDetails
+> Since version 10 `shopify_api` gem includes built-in support for Graphql webhooks. If you are using `shopify_api` version 10 or higher you don't need to use this gem to handle Graphql webhooks. See [`shopify_app` documentation](https://github.com/Shopify/shopify_app/blob/main/docs/shopify_app/webhooks.md) for more details.
 
-    OpenStruct.new(
-      id: data.id,
-      name: data.name,
-      status: data.status,
-      trial_days: data.trialDays,
-      current_period_end: data.currentPeriodEnd && Time.parse(data.currentPeriodEnd),
-      test: data.test,
-      recurring_line_item_id: recurring_line_item&.id,
-      recurring_price: recurring_pricing&.price&.amount&.to_d,
-      recurring_interval: recurring_pricing&.interval,
-      usage_line_item_id: usage_line_item&.id,
-      usage_balance: usage_pricing&.balanceUsed&.amount&.to_d,
-      usage_capped_amount: usage_pricing&.cappedAmount&.amount&.to_d,
-      usage_interval: usage_pricing&.interval,
-      usage_terms: usage_pricing&.terms,
-    )
-  end
-end
-```
+The gem has built-in support for Graphql webhooks (similar to `shopify_app`). To enable it add the following config to `config/initializers/shopify_app.rb`:
 
-For usage examples see query and mutation below.
-
-#### Example query
-
-Definition:
-```ruby
-class GetAppSubscription
-  include ShopifyGraphql::Query
-
-  QUERY = <<~GRAPHQL
-    #{AppSubscriptionFields::FRAGMENT}
-    query($id: ID!) {
-      node(id: $id) {
-        ... AppSubscriptionFields
-      }
-    }
-  GRAPHQL
-
-  def call(id:)
-    response = execute(QUERY, id: id)
-    response.data = AppSubscriptionFields.parse(response.data.node)
-    response
-  end
-end
-```
-
-Usage:
-```ruby
-shopify_subscription = GetAppSubscription.call(id: @id).data
-shopify_subscription.status
-shopify_subscription.current_period_end
-```
-
-#### Example mutation
-
-Definition:
-```ruby
-class CreateRecurringSubscription
-  include ShopifyGraphql::Mutation
-
-  MUTATION = <<~GRAPHQL
-    #{AppSubscriptionFields::FRAGMENT}
-    mutation appSubscriptionCreate(
-      $name: String!,
-      $lineItems: [AppSubscriptionLineItemInput!]!,
-      $returnUrl: URL!,
-      $trialDays: Int,
-      $test: Boolean
-    ) {
-      appSubscriptionCreate(
-        name: $name,
-        lineItems: $lineItems,
-        returnUrl: $returnUrl,
-        trialDays: $trialDays,
-        test: $test
-      ) {
-        appSubscription {
-          ... AppSubscriptionFields
-        }
-        confirmationUrl
-        userErrors {
-          field
-          message
-        }
-      }
-    }
-  GRAPHQL
-
-  def call(name:, price:, return_url:, trial_days: nil, test: nil, interval: :monthly)
-    payload = { name: name, returnUrl: return_url }
-    plan_interval = (interval == :monthly) ? 'EVERY_30_DAYS' : 'ANNUAL'
-    payload[:lineItems] = [{
-      plan: {
-        appRecurringPricingDetails: {
-          price: { amount: price, currencyCode: 'USD' },
-          interval: plan_interval
-        }
-      }
-    }]
-    payload[:trialDays] = trial_days if trial_days
-    payload[:test] = test if test
-
-    response = execute(MUTATION, **payload)
-    response.data = response.data.appSubscriptionCreate
-    handle_user_errors(response.data)
-    response.data = parse_data(response.data)
-    response
-  end
-
-  private
-
-  def parse_data(data)
-    OpenStruct.new(
-      subscription: AppSubscriptionFields.parse(data.appSubscription),
-      confirmation_url: data.confirmationUrl,
-    )
-  end
-end
-```
-
-Usage:
-```ruby
-response = CreateRecurringSubscription.call(
-  name: "Plan Name",
-  price: 10,
-  return_url: "RETURN URL",
-  trial_days: 3,
-  test: true,
-).data
-confirmation_url = response.confirmation_url
-shopify_subscription = response.subscription
-```
-
-## Installation
-
-In Gemfile, add:
 ```rb
-gem "shopify_graphql"
-```
-
-This gem relies on `shopify_app` for authentication so no extra setup is required. But you still need to wrap your Graphql calls with `shop.with_shopify_session`:
-```ruby
-shop.with_shopify_session do
-  # your calls to graphql
+ShopifyGraphql.configure do |config|
+  # Webhooks
+  webhooks_prefix = "https://#{Rails.configuration.app_host}/graphql_webhooks"
+  config.webhook_jobs_namespace = 'shopify/webhooks'
+  config.webhook_enabled_environments = ['development', 'staging', 'production']
+  config.webhooks = [
+    { topic: 'SHOP_UPDATE', address: "#{webhooks_prefix}/shop_update" },
+    { topic: 'APP_SUBSCRIPTIONS_UPDATE', address: "#{webhooks_prefix}/app_subscriptions_update" },
+    { topic: 'APP_UNINSTALLED', address: "#{webhooks_prefix}/app_uninstalled" },
+  ]
 end
 ```
 
-To register webhooks for shop after app installation you have to call `ShopifyGraphql::UpdateWebhooksJob`. The best way to do it is in `AfterInstallJob`:
+And add the following routes to `config/routes.rb`:
+
+```rb
+mount ShopifyGraphql::Engine, at: '/'
+```
+
+To register defined webhooks you need to call `ShopifyGraphql::UpdateWebhooksJob`. You can call it manually or use `AfterAuthenticateJob` from `shopify_app`:
+
 ```rb
 # config/initializers/shopify_app.rb
 ShopifyApp.configure do |config|
@@ -258,7 +783,7 @@ class AfterInstallJob < ApplicationJob
     # ...
     update_webhooks(shop)
   end
-  
+
   def update_webhooks(shop)
     ShopifyGraphql::UpdateWebhooksJob.perform_later(
       shop_domain: shop.shopify_domain,
@@ -268,27 +793,18 @@ class AfterInstallJob < ApplicationJob
 end
 ```
 
-The gem has built-in support for graphql webhooks (similar to `shopify_app`). To enable it add the following config to `config/initializers/shopify_app.rb`:
-```ruby
-ShopifyGraphql.configure do |config|
-  # Webhooks
-  webhooks_prefix = "https://#{Rails.configuration.app_host}/graphql_webhooks"
-  config.webhook_jobs_namespace = 'shopify/webhooks'
-  config.webhook_enabled_environments = ['production']
-  config.webhooks = [
-    { topic: 'SHOP_UPDATE', address: "#{webhooks_prefix}/shop_update" },
-    { topic: 'APP_SUBSCRIPTIONS_UPDATE', address: "#{webhooks_prefix}/app_subscriptions_update" },
-    { topic: 'APP_UNINSTALLED', address: "#{webhooks_prefix}/app_uninstalled" },
-  ]
+To handle webhooks create jobs in `app/jobs/webhooks` folder. The gem will automatically call them when new webhooks are received. The job name should match the webhook topic name. For example, to handle `APP_UNINSTALLED` webhook create `app/jobs/webhooks/app_uninstalled_job.rb`:
+
+```rb
+class Webhooks::AppUninstalledJob < ApplicationJob
+  queue_as :default
+
+  def perform(shop_domain:, webhook:)
+    shop = Shop.find_by!(shopify_domain: shop_domain)
+    # handle shop uninstall
+  end
 end
 ```
-
-Add the following to `config/routes.rb`:
-```ruby
-mount ShopifyGraphql::Engine, at: '/'
-```
-
-You can also use `WEBHOOKS_ENABLED=true` env variable to enable webhooks (useful in development).
 
 ## License
 
