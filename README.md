@@ -737,6 +737,8 @@ ShopifyGraphql.handle_user_errors(response)
 - `ShopifyGraphql::CreateRecurringSubscription`
 - `ShopifyGraphql::CreateUsageSubscription`
 - `ShopifyGraphql::GetAppSubscription`
+- `ShopifyGraphql::UpsertPrivateMetafield`
+- `ShopifyGraphql::DeletePrivateMetafield`
 
 Built-in wrappers are located in [`app/graphql/shopify_graphql`](/app/graphql/shopify_graphql/) folder. You can use them directly in your apps or as an example to create your own wrappers.
 

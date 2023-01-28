@@ -1,0 +1,25 @@
+{
+  "data": {
+    "privateMetafieldUpsert": {
+      "privateMetafield": {
+        "id": "gid:\/\/shopify\/PrivateMetafield\/91994554591",
+        "namespace": "NAMESPACE",
+        "key": "KEY",
+        "value": "{\"foo\":\"baz\"}",
+        "valueType": "JSON_STRING"
+      },
+      "userErrors": []
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 10,
+      "actualQueryCost": 10,
+      "throttleStatus": {
+        "maximumAvailable": 1000.0,
+        "currentlyAvailable": 990,
+        "restoreRate": 50.0
+      }
+    }
+  }
+}

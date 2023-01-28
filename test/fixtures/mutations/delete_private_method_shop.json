@@ -1,0 +1,19 @@
+{
+  "data": {
+    "privateMetafieldDelete": {
+      "deletedPrivateMetafieldId": "gid:\/\/shopify\/PrivateMetafield\/91994554591",
+      "userErrors": []
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 10,
+      "actualQueryCost": 10,
+      "throttleStatus": {
+        "maximumAvailable": 1000.0,
+        "currentlyAvailable": 990,
+        "restoreRate": 50.0
+      }
+    }
+  }
+}
