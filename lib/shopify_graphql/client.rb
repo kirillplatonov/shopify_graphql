@@ -10,7 +10,7 @@ module ShopifyGraphql
     rescue ShopifyAPI::Errors::HttpResponseError => e
       Response.new(handle_response(e.response))
     rescue JSON::ParserError => e
-      raise ConnectionError.new(e, "Failed to parse JSON")
+      raise ServerError.new(e, "Invalid JSON response")
     end
 
     def parsed_body(response)
