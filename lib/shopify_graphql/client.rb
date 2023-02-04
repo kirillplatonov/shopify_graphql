@@ -67,6 +67,8 @@ module ShopifyGraphql
       case error_code
       when "THROTTLED"
         raise TooManyRequests.new(response, error_message, code: error_code, doc: error_doc)
+      when "INTERNAL_SERVER_ERROR"
+        raise ServerError.new(response, error_message, code: error_code, doc: error_doc)
       else
         raise ConnectionError.new(response, error_message, code: error_code, doc: error_doc)
       end
