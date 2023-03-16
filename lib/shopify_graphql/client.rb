@@ -11,7 +11,7 @@ module ShopifyGraphql
       Response.new(handle_response(e.response))
     rescue JSON::ParserError => e
       raise ServerError.new(e, "Invalid JSON response")
-    rescue Errno::ECONNRESET, Net::ReadTimeout, Net::OpenTimeout, OpenSSL::SSL::SSLError => e
+    rescue Errno::ECONNRESET, Errno::EPIPE, Net::ReadTimeout, Net::OpenTimeout, OpenSSL::SSL::SSLError => e
       raise ConnectionError.new(e, "Network error")
     end
 
