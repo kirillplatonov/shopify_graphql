@@ -55,7 +55,7 @@ module ShopifyGraphql
     private
 
     def parse_data(data)
-      OpenStruct.new(
+      Struct.new(
         subscription: AppSubscriptionFields.parse(data.appSubscription),
         confirmation_url: data.confirmationUrl
       )

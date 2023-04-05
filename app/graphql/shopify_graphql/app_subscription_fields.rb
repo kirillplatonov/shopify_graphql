@@ -46,7 +46,7 @@ module ShopifyGraphql
       end
       usage_pricing = usage_line_item&.plan&.pricingDetails
 
-      OpenStruct.new(
+      Struct.new(
         id: data.id,
         name: data.name,
         status: data.status,

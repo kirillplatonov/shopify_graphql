@@ -27,8 +27,8 @@ module ShopifyGraphql
     private
 
     def parse_data(data)
-      subscription = OpenStruct.new(id: data.appSubscription.id)
-      OpenStruct.new(subscription: subscription)
+      subscription = Struct.new(id: data.appSubscription.id)
+      Struct.new(subscription: subscription)
     end
   end
 end

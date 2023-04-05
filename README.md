@@ -8,7 +8,7 @@ Less painful way to work with [Shopify Graphql API](https://shopify.dev/api/admi
 - Conventions for organizing Graphql code
 - ActiveResource-like error handling
 - Graphql and user error handlers
-- Auto-conversion of responses to OpenStruct
+- Auto-conversion of responses to Struct
 - Graphql webhooks integration for Rails
 - Wrappers for Graphql rate limit extensions
 - Built-in calls for common Graphql calls
@@ -118,7 +118,7 @@ class GetProduct
   private
 
   def parse_data(data)
-    OpenStruct.new(
+    Struct.new(
       id: data.id,
       title: data.title,
       featured_image: data.featuredImage&.source
@@ -157,7 +157,7 @@ class ProductFields
   GRAPHQL
 
   def self.parse(data)
-    OpenStruct.new(
+    Struct.new(
       id: data.id,
       title: data.title,
       featured_image: data.featuredImage&.source
@@ -239,7 +239,7 @@ class GetProducts
     return [] if data.blank?
 
     data.compact.map do |edge|
-      OpenStruct.new(
+      Struct.new(
         id: edge.node.id,
         title: edge.node.title,
         featured_image: edge.node.featuredImage&.source
@@ -281,7 +281,7 @@ class ProductFields
   GRAPHQL
 
   def self.parse(data)
-    OpenStruct.new(
+    Struct.new(
       id: data.id,
       title: data.title,
       featured_image: data.featuredImage&.source
@@ -323,7 +323,7 @@ class GetProducts
     return [] if data.blank?
 
     data.compact.map do |edge|
-      OpenStruct.new(
+      Struct.new(
         cursor: edge.cursor,
         node: ProductFields.parse(edge.node)
       )
@@ -365,7 +365,7 @@ class ProductFields
   GRAPHQL
 
   def self.parse(data)
-    OpenStruct.new(
+    Struct.new(
       id: data.id,
       title: data.title,
       featured_image: data.featuredImage&.source
@@ -473,7 +473,7 @@ class ProductFields
   GRAPHQL
 
   def self.parse(data)
-    OpenStruct.new(
+    Struct.new(
       id: data.id,
       title: data.title,
       featured_image: data.featuredImage&.source
@@ -632,11 +632,11 @@ class GetCollectionsWithProducts
     return [] if data.blank?
 
     data.compact.map do |edge|
-      OpenStruct.new(
+      Struct.new(
         id: edge.node.id,
         title: edge.node.title,
         products: edge.node.products.edges.map do |product_edge|
-          OpenStruct.new(id: product_edge.node.id)
+          Struct.new(id: product_edge.node.id)
         end
       )
     end

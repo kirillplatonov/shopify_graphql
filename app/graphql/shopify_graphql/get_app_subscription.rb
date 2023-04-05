@@ -25,7 +25,7 @@ module ShopifyGraphql
         raise ResourceNotFound.new(200, "Subscription not found")
       end
 
-      OpenStruct.new(
+      Struct.new(
         subscription: AppSubscriptionFields.parse(data.node),
       )
     end
