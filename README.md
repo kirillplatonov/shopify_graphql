@@ -384,24 +384,7 @@ class GetProducts
   QUERY = <<~GRAPHQL
     #{ProductFields::FRAGMENT}
 
-    query {
-      products(first: #{LIMIT}) {
-        edges {
-          node {
-            ... ProductFields
-          }
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-      }
-    }
-  GRAPHQL
-  QUERY_WITH_CURSOR = <<~GRAPHQL
-    #{ProductFields::FRAGMENT}
-
-    query($cursor: String!) {
+    query($cursor: String) {
       products(first: #{LIMIT}, after: $cursor) {
         edges {
           node {
@@ -421,7 +404,7 @@ class GetProducts
     data = parse_data(response.data.products.edges)
 
     while response.data.products.pageInfo.hasNextPage
-      response = execute(QUERY_WITH_CURSOR, cursor: response.data.products.pageInfo.endCursor)
+      response = execute(QUERY, cursor: response.data.products.pageInfo.endCursor)
       data += parse_data(response.data.products.edges)
     end
 
@@ -492,24 +475,7 @@ class GetProducts
   QUERY = <<~GRAPHQL
     #{ProductFields::FRAGMENT}
 
-    query {
-      products(first: #{LIMIT}) {
-        edges {
-          node {
-            ... ProductFields
-          }
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-      }
-    }
-  GRAPHQL
-  QUERY_WITH_CURSOR = <<~GRAPHQL
-    #{ProductFields::FRAGMENT}
-
-    query($cursor: String!) {
+    query($cursor: String) {
       products(first: #{LIMIT}, after: $cursor) {
         edges {
           node {
@@ -531,7 +497,7 @@ class GetProducts
     end
 
     while response.data.products.pageInfo.hasNextPage
-      response = execute(QUERY_WITH_CURSOR, cursor: response.data.products.pageInfo.endCursor)
+      response = execute(QUERY, cursor: response.data.products.pageInfo.endCursor)
       response.data.products.edges.each do |edge|
         block.call ProductFields.parse(edge.node)
       end
@@ -567,30 +533,7 @@ class GetCollectionsWithProducts
   COLLECTIONS_LIMIT = 1
   PRODUCTS_LIMIT = 25
   QUERY = <<~GRAPHQL
-    query {
-      collections(first: #{COLLECTIONS_LIMIT}) {
-        edges {
-          node {
-            id
-            title
-            products(first: #{PRODUCTS_LIMIT}) {
-              edges {
-                node {
-                  id
-                }
-              }
-            }
-          }
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-      }
-    }
-  GRAPHQL
-  QUERY_WITH_CURSOR = <<~GRAPHQL
-    query ($cursor: String!) {
+    query ($cursor: String) {
       collections(first: #{COLLECTIONS_LIMIT}, after: $cursor) {
         edges {
           node {
@@ -618,7 +561,7 @@ class GetCollectionsWithProducts
     data = parse_data(response.data.collections.edges)
 
     while response.data.collections.pageInfo.hasNextPage
-      response = execute(QUERY_WITH_CURSOR, cursor: response.data.collections.pageInfo.endCursor)
+      response = execute(QUERY, cursor: response.data.collections.pageInfo.endCursor)
       data += parse_data(response.data.collections.edges)
     end
 
