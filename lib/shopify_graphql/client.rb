@@ -17,7 +17,7 @@ module ShopifyGraphql
 
     def parsed_body(response)
       if response.body.is_a?(Hash)
-        JSON.parse(response.body.to_json, object_class: Struct)
+        JSON.parse(response.body.to_json, object_class: OpenStruct)
       else
         response.body
       end
