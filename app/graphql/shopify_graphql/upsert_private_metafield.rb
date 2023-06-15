@@ -46,13 +46,21 @@ module ShopifyGraphql
 
     def parse_data(data)
       metafield = data.privateMetafieldUpsert.privateMetafield
-      Struct.new(
-        id: metafield.id,
-        namespace: metafield.namespace,
-        key: metafield.key,
-        value: metafield.value,
-        value_type: metafield.valueType
-      )
+      Struct
+        .new(
+          :id,
+          :namespace,
+          :key,
+          :value,
+          :value_type
+        )
+        .new(
+          metafield.id,
+          metafield.namespace,
+          metafield.key,
+          metafield.value,
+          metafield.valueType
+        )
     end
   end
 end

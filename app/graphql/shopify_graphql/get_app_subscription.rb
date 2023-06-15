@@ -25,9 +25,13 @@ module ShopifyGraphql
         raise ResourceNotFound.new(200, "Subscription not found")
       end
 
-      Struct.new(
-        subscription: AppSubscriptionFields.parse(data.node),
-      )
+      Struct
+        .new(
+          :subscription,
+        )
+        .new(
+          AppSubscriptionFields.parse(data.node),
+        )
     end
   end
 end

@@ -53,10 +53,15 @@ module ShopifyGraphql
     private
 
     def parse_data(data)
-      Struct.new(
-        subscription: AppSubscriptionFields.parse(data.appSubscription),
-        confirmation_url: data.confirmationUrl
-      )
+      Struct
+        .new(
+          :subscription,
+          :confirmation_url
+        )
+        .new(
+          AppSubscriptionFields.parse(data.appSubscription),
+          data.confirmationUrl
+        )
     end
   end
 end

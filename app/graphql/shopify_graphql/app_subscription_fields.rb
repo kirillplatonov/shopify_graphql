@@ -46,23 +46,41 @@ module ShopifyGraphql
       end
       usage_pricing = usage_line_item&.plan&.pricingDetails
 
-      Struct.new(
-        id: data.id,
-        name: data.name,
-        status: data.status,
-        created_at: data.createdAt && Time.parse(data.createdAt),
-        trial_days: data.trialDays,
-        current_period_end: data.currentPeriodEnd && Time.parse(data.currentPeriodEnd),
-        test: data.test,
-        recurring_line_item_id: recurring_line_item&.id,
-        recurring_price: recurring_pricing&.price&.amount&.to_d,
-        recurring_interval: recurring_pricing&.interval,
-        usage_line_item_id: usage_line_item&.id,
-        usage_balance: usage_pricing&.balanceUsed&.amount&.to_d,
-        usage_capped_amount: usage_pricing&.cappedAmount&.amount&.to_d,
-        usage_interval: usage_pricing&.interval,
-        usage_terms: usage_pricing&.terms
-      )
+      Struct
+        .new(
+          :id,
+          :name,
+          :status,
+          :created_at,
+          :trial_days,
+          :current_period_end,
+          :test,
+          :recurring_line_item_id,
+          :recurring_price,
+          :recurring_interval,
+          :usage_line_item_id,
+          :usage_balance,
+          :usage_capped_amount,
+          :usage_interval,
+          :usage_terms
+        )
+        .new(
+          data.id,
+          data.name,
+          data.status,
+          data.createdAt && Time.parse(data.createdAt),
+          data.trialDays,
+          data.currentPeriodEnd && Time.parse(data.currentPeriodEnd),
+          data.test,
+          recurring_line_item&.id,
+          recurring_pricing&.price&.amount&.to_d,
+          recurring_pricing&.interval,
+          usage_line_item&.id,
+          usage_pricing&.balanceUsed&.amount&.to_d,
+          usage_pricing&.cappedAmount&.amount&.to_d,
+          usage_pricing&.interval,
+          usage_pricing&.terms
+        )
     end
   end
 end

@@ -27,8 +27,10 @@ module ShopifyGraphql
     private
 
     def parse_data(data)
-      subscription = Struct.new(id: data.appSubscription.id)
-      Struct.new(subscription: subscription)
+      subscription = Struct.new(:id).new(data.appSubscription.id)
+      Struct
+        .new(:subscription)
+        .new(subscription)
     end
   end
 end

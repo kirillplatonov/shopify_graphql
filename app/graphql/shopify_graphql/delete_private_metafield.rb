@@ -28,9 +28,9 @@ module ShopifyGraphql
 
     def parse_data(data)
       id = data.privateMetafieldDelete.deletedPrivateMetafieldId
-      Struct.new(
-        deleted_private_metafield_id: id
-      )
+      Struct
+        .new(:deleted_private_metafield_id)
+        .new(id)
     end
   end
 end

@@ -118,11 +118,17 @@ class GetProduct
   private
 
   def parse_data(data)
-    Struct.new(
-      id: data.id,
-      title: data.title,
-      featured_image: data.featuredImage&.source
-    )
+    Struct
+      .new(
+        :id,
+        :title,
+        :featured_image
+      )
+      .new(
+        data.id,
+        data.title,
+        data.featuredImage&.source
+      )
   end
 end
 ```
@@ -157,11 +163,17 @@ class ProductFields
   GRAPHQL
 
   def self.parse(data)
-    Struct.new(
-      id: data.id,
-      title: data.title,
-      featured_image: data.featuredImage&.source
-    )
+    Struct
+      .new(
+        :id,
+        :title,
+        :featured_image
+      )
+      .new(
+        data.id,
+        data.title,
+        data.featuredImage&.source
+      )
   end
 end
 ```
@@ -239,11 +251,17 @@ class GetProducts
     return [] if data.blank?
 
     data.compact.map do |edge|
-      Struct.new(
-        id: edge.node.id,
-        title: edge.node.title,
-        featured_image: edge.node.featuredImage&.source
-      )
+      Struct
+        .new(
+          :id,
+          :title,
+          :featured_image
+        )
+        .new(
+          edge.node.id,
+          edge.node.title,
+          edge.node.featuredImage&.source
+        )
     end
   end
 end
@@ -281,11 +299,17 @@ class ProductFields
   GRAPHQL
 
   def self.parse(data)
-    Struct.new(
-      id: data.id,
-      title: data.title,
-      featured_image: data.featuredImage&.source
-    )
+    Struct
+      .new(
+        :id,
+        :title,
+        :featured_image
+      )
+      .new(
+        data.id,
+        data.title,
+        data.featuredImage&.source
+      )
   end
 end
 ```
@@ -323,10 +347,15 @@ class GetProducts
     return [] if data.blank?
 
     data.compact.map do |edge|
-      Struct.new(
-        cursor: edge.cursor,
-        node: ProductFields.parse(edge.node)
-      )
+      Struct
+        .new(
+          :cursor,
+          :node
+        )
+        .new(
+          edge.cursor,
+          ProductFields.parse(edge.node)
+        )
     end
   end
 end
@@ -365,11 +394,17 @@ class ProductFields
   GRAPHQL
 
   def self.parse(data)
-    Struct.new(
-      id: data.id,
-      title: data.title,
-      featured_image: data.featuredImage&.source
-    )
+    Struct
+      .new(
+        :id,
+        :title,
+        :featured_image
+      )
+      .new(
+        data.id,
+        data.title,
+        data.featuredImage&.source
+      )
   end
 end
 ```
@@ -456,11 +491,17 @@ class ProductFields
   GRAPHQL
 
   def self.parse(data)
-    Struct.new(
-      id: data.id,
-      title: data.title,
-      featured_image: data.featuredImage&.source
-    )
+    Struct
+      .new(
+        :id,
+        :title,
+        :featured_image
+      )
+      .new(
+        data.id,
+        data.title,
+        data.featuredImage&.source
+      )
   end
 end
 ```
@@ -575,13 +616,21 @@ class GetCollectionsWithProducts
     return [] if data.blank?
 
     data.compact.map do |edge|
-      Struct.new(
-        id: edge.node.id,
-        title: edge.node.title,
-        products: edge.node.products.edges.map do |product_edge|
-          Struct.new(id: product_edge.node.id)
-        end
-      )
+      Struct
+        .new(
+          :id,
+          :title,
+          :products
+        )
+        .new(
+          edge.node.id,
+          edge.node.title,
+          edge.node.products.edges.map do |product_edge|
+            Struct
+              .new(:id)
+              .new(product_edge.node.id)
+          end
+        )
     end
   end
 end
