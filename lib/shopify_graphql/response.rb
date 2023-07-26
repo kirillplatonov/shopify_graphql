@@ -22,6 +22,10 @@ module ShopifyGraphql
       extensions&.cost&.throttleStatus&.restoreRate
     end
 
+    def query_cost
+      extensions&.cost&.actualQueryCost
+    end
+
     def points_maxed?(threshold: 0)
       points_left < threshold
     end
