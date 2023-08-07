@@ -29,7 +29,7 @@ class ActiveSupport::TestCase
   end
 
   def fake(fixture_path, query, **variables)
-    api_path = "https://test-shop.myshopify.com/admin/api/2022-10/graphql.json"
+    api_path = "https://test-shop.myshopify.com/admin/api/2023-07/graphql.json"
     fixture = File.read File.expand_path("fixtures/#{fixture_path}", __dir__)
     body = { query: query, variables: variables }
 
