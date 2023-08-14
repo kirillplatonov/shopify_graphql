@@ -4,6 +4,8 @@ module ShopifyGraphql
       ShopifyGraphql.configuration.webhooks_manager_queue_name
     end
 
+    retry_on ShopifyGraphql::TooManyRequests
+
     def perform(shop_domain:, shop_token:)
       webhooks = ShopifyGraphql.configuration.webhooks
 
