@@ -685,6 +685,30 @@ ShopifyGraphql.handle_user_errors(response)
 
 Built-in wrappers are located in [`app/graphql/shopify_graphql`](/app/graphql/shopify_graphql/) folder. You can use them directly in your apps or as an example to create your own wrappers.
 
+## Rate limits
+
+The gem exposes Graphql rate limit extensions in response object:
+
+- `points_left`
+- `points_limit`
+- `points_restore_rate`
+- `query_cost`
+
+And adds a helper to check if points crossed threshold (useful for implementing API backoff):
+
+- `points_maxed?(threshold: 100)`
+
+Usage example:
+
+```rb
+response = GetProduct.call(id: "gid://shopify/Product/PRODUCT_GID")
+response.points_left # => 1999
+response.points_limit # => 2000.0
+response.points_restore_rate # => 100.0
+response.query_cost # => 1
+response.points_maxed?(threshold: 100) # => false
+```
+
 ## Graphql webhooks
 
 > Since version 10 `shopify_api` gem includes built-in support for Graphql webhooks. If you are using `shopify_api` version 10 or higher you don't need to use this gem to handle Graphql webhooks. See [`shopify_app` documentation](https://github.com/Shopify/shopify_app/blob/main/docs/shopify_app/webhooks.md) for more details.
