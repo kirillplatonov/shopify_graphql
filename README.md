@@ -694,7 +694,7 @@ The gem exposes Graphql rate limit extensions in response object:
 - `points_restore_rate`
 - `query_cost`
 
-And adds a helper to check if points crossed threshold (useful for implementing API backoff):
+And adds a helper to check if available points lower than threshold (useful for implementing API backoff):
 
 - `points_maxed?(threshold: 100)`
 
