@@ -60,6 +60,10 @@ module ShopifyGraphql
   class PreconditionFailed < ClientError # :nodoc:
   end
 
+  # 423 Locked
+  class ShopLocked < ClientError # :nodoc:
+  end
+
   # 429 Too Many Requests
   class TooManyRequests < ClientError # :nodoc:
   end

@@ -47,6 +47,8 @@ module ShopifyGraphql
         raise PreconditionFailed.new(parsed_body(response), code: response.code)
       when 422
         raise ResourceInvalid.new(parsed_body(response), code: response.code)
+      when 423
+        raise ShopLocked.new(parsed_body(response), code: response.code)
       when 429, 430
         raise TooManyRequests.new(parsed_body(response), code: response.code)
       when 401...500
