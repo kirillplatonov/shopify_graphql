@@ -1,22 +1,8 @@
 module ShopifyGraphql
-  class ConnectionError < StandardError
-    attr_reader :response, :code, :doc, :fields
-
-    def initialize(response, message = nil, code: nil, doc: nil, fields: nil)
+  class ConnectionError < ShopifyAPI::Errors::HttpResponseError
+    def initialize(response: nil)
       @response = response
-      @message = message
-      @code = code
-      @doc = doc
-      @fields = fields
-    end
-
-    def to_s
-      message = "Failed.".dup
-      message << " Response code = #{@code}." if @code
-      message << " Response message = #{@message}." if @message
-      message << " Documentation = #{@doc}." if @doc
-      message << " Fields = #{@fields}." if @fields
-      message
+      @code = response.code if response
     end
   end
 
