@@ -1,8 +1,21 @@
 module ShopifyGraphql
   class ConnectionError < ShopifyAPI::Errors::HttpResponseError
     def initialize(response: nil)
-      @response = response
-      @code = response.code if response
+      unless response
+        empty_response = ShopifyAPI::Clients::HttpResponse.new(code: 200, headers: {}, body: "")
+        super(response: empty_response) and return
+      end
+
+      if response.is_a?(ShopifyAPI::Clients::HttpResponse)
+        super(response: response)
+      else
+        response = ShopifyAPI::Clients::HttpResponse.new(
+          code: 200,
+          headers: {},
+          body: response
+        )
+        super(response: response)
+      end
     end
   end
 

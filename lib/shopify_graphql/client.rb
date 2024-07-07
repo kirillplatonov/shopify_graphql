@@ -26,7 +26,7 @@ module ShopifyGraphql
     def handle_response(response, error = nil)
       case response.code
       when 200..400
-        handle_graphql_errors(parsed_body(response))
+        handle_graphql_errors(response)
       when 400
         raise BadRequest.new(response: response), error.message
       when 401
@@ -61,7 +61,7 @@ module ShopifyGraphql
     end
 
     def handle_graphql_errors(response)
-      return response if response.errors.blank?
+      return parsed_body(response) if response.body["errors"].blank?
 
       error = response.errors.first
       error_message = generate_error_message(
@@ -93,12 +93,12 @@ module ShopifyGraphql
     end
 
     def generate_error_message(message: nil, code: nil, doc: nil, fields: nil)
-      message = "Failed.".dup
-      message << " Response code = #{code}." if code
-      message << " Response message = #{message}." if message
-      message << " Documentation = #{doc}." if doc
-      message << " Fields = #{fields}." if fields
-      message
+      string = "Failed.".dup
+      string << " Response code = #{code}." if code
+      string << " Response message = #{message}." if message
+      string << " Documentation = #{doc}." if doc
+      string << " Fields = #{fields}." if fields
+      string
     end
   end
 
