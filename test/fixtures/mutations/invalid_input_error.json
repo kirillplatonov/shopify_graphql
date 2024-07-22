@@ -1,0 +1,27 @@
+{
+  "errors": [
+    {
+      "message": "Variable $input of type ProductInput! was provided invalid value for title1 (Field is not defined on ProductInput)",
+      "locations": [
+        {
+          "line": 1,
+          "column": 10
+        }
+      ],
+      "extensions": {
+        "value": {
+          "id": "gid://shopify/Product/8077118406833",
+          "title1": "Test Prod 1"
+        },
+        "problems": [
+          {
+            "path": [
+              "title1"
+            ],
+            "explanation": "Field is not defined on ProductInput"
+          }
+        ]
+      }
+    }
+  ]
+}
