@@ -19,6 +19,8 @@ if ActiveSupport::TestCase.respond_to?(:fixture_path=)
 end
 
 class ActiveSupport::TestCase
+  API_PATH = "https://test-shop.myshopify.com/admin/api/2023-07/graphql.json"
+
   setup do
     session = ShopifyAPI::Auth::Session.new(shop: "test-shop.myshopify.com", access_token: "test-token")
     ShopifyAPI::Context.activate_session(session)
@@ -29,12 +31,16 @@ class ActiveSupport::TestCase
   end
 
   def fake(fixture_path, query, **variables)
-    api_path = "https://test-shop.myshopify.com/admin/api/2023-07/graphql.json"
     fixture = File.read File.expand_path("fixtures/#{fixture_path}", __dir__)
     body = { query: query, variables: variables }
 
-    stub_request(:post, api_path)
+    stub_request(:post, API_PATH)
       .with(body: body)
       .to_return(body: fixture)
+  end
+
+  def fake_error(error_class)
+    stub_request(:post, API_PATH)
+      .to_raise(error_class)
   end
 end
