@@ -11,8 +11,14 @@ module ShopifyGraphql
       Response.new(handle_response(e.response))
     rescue JSON::ParserError => e
       raise ServerError.new(e, "Invalid JSON response")
-    rescue Errno::ECONNRESET, Errno::EPIPE, Errno::ECONNREFUSED, Errno::ENETUNREACH, Net::ReadTimeout, Net::OpenTimeout, OpenSSL::SSL::SSLError, EOFError, Socket::ResolutionError => e
+    rescue Errno::ECONNRESET, Errno::EPIPE, Errno::ECONNREFUSED, Errno::ENETUNREACH, Net::ReadTimeout, Net::OpenTimeout, OpenSSL::SSL::SSLError, EOFError => e
       raise ServerError.new(e, "Network error")
+    rescue => e
+      if (defined?(Socket::ResolutionError) and e.is_a?(Socket::ResolutionError))
+        raise ServerError.new(response: response), "Network error: #{e.message}"
+      else
+        raise e
+      end
     end
 
     def parsed_body(response)
