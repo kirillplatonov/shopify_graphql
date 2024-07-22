@@ -67,12 +67,14 @@ module ShopifyGraphql
     end
 
     def handle_graphql_errors(response)
-      return parsed_body(response) if response.body["errors"].blank?
+      parsed_body = parsed_body(response)
+      return parsed_body(response) if parsed_body.errors.blank?
 
-      error = response.errors.first
+      error = parsed_body.errors.first
+      error_code = error.extensions&.code
       error_message = generate_error_message(
         message: error.message,
-        code: error.extensions&.code,
+        code: error_code,
         doc: error.extensions&.documentation
       )
 
