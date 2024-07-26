@@ -94,16 +94,21 @@ module ShopifyGraphql
       error = response.userErrors.first
       error_message = generate_error_message(
         message: error.message,
-        fields: error.field,
         code: error.code,
+        fields: error.field,
       )
-      raise UserError.new(response: response), error_message
+      raise UserError.new(
+        response: response,
+        message: error.message,
+        code: error.code,
+        fields: error.field,
+      ), error_message
     end
 
     def generate_error_message(message: nil, code: nil, doc: nil, fields: nil)
       string = "Failed.".dup
       string << " Response code = #{code}." if code
-      string << " Response message = #{message}." if message
+      string << " Response message = #{message}.".gsub("..", ".") if message
       string << " Documentation = #{doc}." if doc
       string << " Fields = #{fields}." if fields
       string

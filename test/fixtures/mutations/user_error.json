@@ -1,0 +1,28 @@
+{
+  "data": {
+    "metafieldDefinitionCreate": {
+      "createdDefinition": null,
+      "userErrors": [
+        {
+          "field": [
+            "definition",
+            "key"
+          ],
+          "message": "Key is in use for Product metafields on the 'xxx' namespace.",
+          "code": "TAKEN"
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 10,
+      "actualQueryCost": 10,
+      "throttleStatus": {
+        "maximumAvailable": 2000.0,
+        "currentlyAvailable": 1990,
+        "restoreRate": 100.0
+      }
+    }
+  }
+}

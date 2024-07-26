@@ -67,11 +67,19 @@ module ShopifyGraphql
   class TooManyRequests < ClientError # :nodoc:
   end
 
-  # Graphql userErrors
-  class UserError < ClientError # :nodoc:
-  end
-
   # 5xx Server Error
   class ServerError < ConnectionError
+  end
+
+  # Custom error for Graphql userErrors handling
+  class UserError < StandardError
+    attr_reader :response, :message, :code, :fields
+
+    def initialize(response:, message:, code:, fields:)
+      @response = response
+      @message = message
+      @code = code
+      @fields = fields
+    end
   end
 end
