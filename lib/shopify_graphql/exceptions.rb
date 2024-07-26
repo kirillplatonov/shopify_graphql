@@ -1,22 +1,21 @@
 module ShopifyGraphql
-  class ConnectionError < StandardError
-    attr_reader :response, :code, :doc, :fields
+  class ConnectionError < ShopifyAPI::Errors::HttpResponseError
+    def initialize(response: nil)
+      unless response
+        empty_response = ShopifyAPI::Clients::HttpResponse.new(code: 200, headers: {}, body: "")
+        super(response: empty_response) and return
+      end
 
-    def initialize(response, message = nil, code: nil, doc: nil, fields: nil)
-      @response = response
-      @message = message
-      @code = code
-      @doc = doc
-      @fields = fields
-    end
-
-    def to_s
-      message = "Failed.".dup
-      message << " Response code = #{@code}." if @code
-      message << " Response message = #{@message}." if @message
-      message << " Documentation = #{@doc}." if @doc
-      message << " Fields = #{@fields}." if @fields
-      message
+      if response.is_a?(ShopifyAPI::Clients::HttpResponse)
+        super(response: response)
+      else
+        response = ShopifyAPI::Clients::HttpResponse.new(
+          code: 200,
+          headers: {},
+          body: response
+        )
+        super(response: response)
+      end
     end
   end
 
@@ -68,11 +67,19 @@ module ShopifyGraphql
   class TooManyRequests < ClientError # :nodoc:
   end
 
-  # Graphql userErrors
-  class UserError < ClientError # :nodoc:
-  end
-
   # 5xx Server Error
   class ServerError < ConnectionError
+  end
+
+  # Custom error for Graphql userErrors handling
+  class UserError < StandardError
+    attr_reader :response, :message, :code, :fields
+
+    def initialize(response:, message:, code:, fields:)
+      @response = response
+      @message = message
+      @code = code
+      @fields = fields
+    end
   end
 end

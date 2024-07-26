@@ -8,11 +8,11 @@ module ShopifyGraphql
       response = client.query(query: query, variables: variables)
       Response.new(handle_response(response))
     rescue ShopifyAPI::Errors::HttpResponseError => e
-      Response.new(handle_response(e.response))
+      Response.new(handle_response(e.response, e))
     rescue JSON::ParserError => e
-      raise ServerError.new(e, "Invalid JSON response")
+      raise ServerError.new(response: response), "Invalid JSON response: #{e.message}"
     rescue Errno::ECONNRESET, Errno::EPIPE, Errno::ECONNREFUSED, Errno::ENETUNREACH, Net::ReadTimeout, Net::OpenTimeout, OpenSSL::SSL::SSLError, EOFError => e
-      raise ServerError.new(e, "Network error")
+      raise ServerError.new(response: response), "Network error: #{e.message}"
     rescue => e
       if (defined?(Socket::ResolutionError) and e.is_a?(Socket::ResolutionError))
         raise ServerError.new(response: response), "Network error: #{e.message}"
@@ -29,58 +29,62 @@ module ShopifyGraphql
       end
     end
 
-    def handle_response(response)
+    def handle_response(response, error = nil)
       case response.code
       when 200..400
-        handle_graphql_errors(parsed_body(response))
+        handle_graphql_errors(response)
       when 400
-        raise BadRequest.new(parsed_body(response), code: response.code)
+        raise BadRequest.new(response: response), error.message
       when 401
-        raise UnauthorizedAccess.new(parsed_body(response), code: response.code)
+        raise UnauthorizedAccess.new(response: response), error.message
       when 402
-        raise PaymentRequired.new(parsed_body(response), code: response.code)
+        raise PaymentRequired.new(response: response), error.message
       when 403
-        raise ForbiddenAccess.new(parsed_body(response), code: response.code)
+        raise ForbiddenAccess.new(response: response), error.message
       when 404
-        raise ResourceNotFound.new(parsed_body(response), code: response.code)
+        raise ResourceNotFound.new(response: response), error.message
       when 405
-        raise MethodNotAllowed.new(parsed_body(response), code: response.code)
+        raise MethodNotAllowed.new(response: response), error.message
       when 409
-        raise ResourceConflict.new(parsed_body(response), code: response.code)
+        raise ResourceConflict.new(response: response), error.message
       when 410
-        raise ResourceGone.new(parsed_body(response), code: response.code)
+        raise ResourceGone.new(response: response), error.message
       when 412
-        raise PreconditionFailed.new(parsed_body(response), code: response.code)
+        raise PreconditionFailed.new(response: response), error.message
       when 422
-        raise ResourceInvalid.new(parsed_body(response), code: response.code)
+        raise ResourceInvalid.new(response: response), error.message
       when 423
-        raise ShopLocked.new(parsed_body(response), code: response.code)
+        raise ShopLocked.new(response: response), error.message
       when 429, 430
-        raise TooManyRequests.new(parsed_body(response), code: response.code)
+        raise TooManyRequests.new(response: response), error.message
       when 401...500
-        raise ClientError.new(parsed_body(response), code: response.code)
+        raise ClientError.new(response: response), error.message
       when 500...600
-        raise ServerError.new(parsed_body(response), code: response.code)
+        raise ServerError.new(response: response), error.message
       else
-        raise ConnectionError.new(parsed_body(response), "Unknown response code: #{response.code}")
+        raise ConnectionError.new(response: response), error.message
       end
     end
 
     def handle_graphql_errors(response)
-      return response if response.errors.blank?
+      parsed_body = parsed_body(response)
+      return parsed_body(response) if parsed_body.errors.blank?
 
-      error = response.errors.first
-      error_message = error.message
+      error = parsed_body.errors.first
       error_code = error.extensions&.code
-      error_doc = error.extensions&.documentation
+      error_message = generate_error_message(
+        message: error.message,
+        code: error_code,
+        doc: error.extensions&.documentation
+      )
 
       case error_code
       when "THROTTLED"
-        raise TooManyRequests.new(response, error_message, code: error_code, doc: error_doc)
+        raise TooManyRequests.new(response: response), error_message
       when "INTERNAL_SERVER_ERROR"
-        raise ServerError.new(response, error_message, code: error_code, doc: error_doc)
+        raise ServerError.new(response: response), error_message
       else
-        raise ConnectionError.new(response, error_message, code: error_code, doc: error_doc)
+        raise ConnectionError.new(response: response), error_message
       end
     end
 
@@ -88,11 +92,26 @@ module ShopifyGraphql
       return response if response.userErrors.blank?
 
       error = response.userErrors.first
-      error_message = error.message
-      error_fields = error.field
-      error_code = error.code
+      error_message = generate_error_message(
+        message: error.message,
+        code: error.code,
+        fields: error.field,
+      )
+      raise UserError.new(
+        response: response,
+        message: error.message,
+        code: error.code,
+        fields: error.field,
+      ), error_message
+    end
 
-      raise UserError.new(response, error_message, fields: error_fields, code: error_code)
+    def generate_error_message(message: nil, code: nil, doc: nil, fields: nil)
+      string = "Failed.".dup
+      string << " Response code = #{code}." if code
+      string << " Response message = #{message}.".gsub("..", ".") if message
+      string << " Documentation = #{doc}." if doc
+      string << " Fields = #{fields}." if fields
+      string
     end
   end
 
