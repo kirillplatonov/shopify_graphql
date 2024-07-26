@@ -11,7 +11,7 @@ require "rails/test_help"
 require "webmock/minitest"
 
 class ActiveSupport::TestCase
-  API_PATH = "https://test-shop.myshopify.com/admin/api/2023-07/graphql.json"
+  API_PATH = "https://test-shop.myshopify.com/admin/api/2024-07/graphql.json"
 
   setup do
     session = ShopifyAPI::Auth::Session.new(shop: "test-shop.myshopify.com", access_token: "test-token")
