@@ -34,4 +34,15 @@ class ErrorHandlingTest < ActiveSupport::TestCase
       ShopifyGraphql.execute(SIMPLE_QUERY)
     end
   end
+
+  test "user error" do
+    fake("mutations/user_error.json", SIMPLE_QUERY)
+
+    begin
+      response = ShopifyGraphql.execute(SIMPLE_QUERY)
+      ShopifyGraphql::Client.new.handle_user_errors(response.data.metafieldDefinitionCreate)
+    rescue ShopifyGraphql::UserError => error
+      assert_equal "TAKEN", error.code
+    end
+  end
 end

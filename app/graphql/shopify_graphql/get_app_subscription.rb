@@ -22,7 +22,7 @@ module ShopifyGraphql
 
     def parse_data(data)
       unless data.node
-        raise ResourceNotFound.new(200, "Subscription not found")
+        raise ResourceNotFound.new, "Subscription not found"
       end
 
       OpenStruct.new(
