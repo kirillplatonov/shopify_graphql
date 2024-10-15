@@ -68,7 +68,9 @@ module ShopifyGraphql
 
     def handle_graphql_errors(response)
       parsed_body = parsed_body(response)
-      return parsed_body(response) if parsed_body.errors.blank?
+      if parsed_body.errors.nil? || parsed_body.errors.empty?
+        return parsed_body(response)
+      end
 
       error = parsed_body.errors.first
       error_code = error.extensions&.code
