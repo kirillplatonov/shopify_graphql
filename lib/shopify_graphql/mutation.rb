@@ -7,7 +7,8 @@ module ShopifyGraphql::Mutation
     end
   end
 
-  delegate :execute, :handle_user_errors, to: :client
+  extend Forwardable
+  def_delegators :client, :execute, :handle_user_errors
 
   def client
     @client ||= ShopifyGraphql::Client.new
