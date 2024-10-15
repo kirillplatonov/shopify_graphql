@@ -3,7 +3,8 @@ module ShopifyGraphql
     extend ActiveSupport::Concern
 
     class_methods do
-      delegate :execute, :handle_user_errors, to: :client
+      extend Forwardable
+      def_delegators :client, :execute, :handle_user_errors
 
       def client
         ShopifyGraphql::Client.new
