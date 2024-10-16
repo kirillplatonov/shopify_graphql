@@ -676,6 +676,23 @@ ShopifyGraphql.handle_user_errors(response)
 
 ## Built-in Graphql calls
 
+- `ShopifyGraphql::CurrentShop`:
+
+  Equivalent to `ShopifyAPI::Shop.current`. Usage example:
+
+  ```rb
+  shop = ShopifyGraphql::CurrentShop.call
+  puts shop.name
+  ```
+
+  Or with locales (requires `read_locales` scope):
+
+  ```rb
+  shop = ShopifyGraphql::CurrentShop.call(with_locales: true)
+  puts shop.primary_locale
+  puts shop.shop_locales
+  ```
+
 - `ShopifyGraphql::CancelSubscription`
 - `ShopifyGraphql::CreateRecurringSubscription`
 - `ShopifyGraphql::CreateUsageSubscription`
