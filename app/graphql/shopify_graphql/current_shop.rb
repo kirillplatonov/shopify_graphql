@@ -60,7 +60,7 @@ module ShopifyGraphql
     GRAPHQL
 
     def call(with_locales: false)
-      query = QUERY
+      query = QUERY.dup
       query.gsub!("#LOCALES_SUBQUERY#", with_locales ? LOCALES_SUBQUERY : "")
       if ShopifyAPI::Context.api_version.in?(%w[2024-01 2024-04 2024-07])
         query.gsub!("#SHOP_OWNER_NAME#", "")
