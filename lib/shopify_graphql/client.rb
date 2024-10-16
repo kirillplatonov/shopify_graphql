@@ -150,7 +150,7 @@ module ShopifyGraphql
       Client.new
     end
 
-    def normalize_display_plan(plan_display_name)
+    def normalize_plan_display_name(plan_display_name)
       return if plan_display_name.blank?
       plan_display_name.parameterize(separator: "_")
     end

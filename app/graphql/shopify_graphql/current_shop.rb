@@ -74,7 +74,7 @@ module ShopifyGraphql
     private
 
     def parse_data(data, with_locales: false)
-      plan_display_name = ShopifyGraphql.normalize_display_plan(data.shop.plan.displayName)
+      plan_display_name = ShopifyGraphql.normalize_plan_display_name(data.shop.plan.displayName)
       plan_name = ShopifyGraphql::DISPLAY_NAME_TO_PLAN[plan_display_name]
       response = OpenStruct.new(
         id: data.shop.id,
