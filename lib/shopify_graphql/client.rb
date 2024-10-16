@@ -1,4 +1,29 @@
 module ShopifyGraphql
+  # Mapping from deprecated plan_name to plan_display_name
+  PLAN_TO_DISPLAY_NAME = {
+    "trial" => "trial",
+    "frozen" => "frozen",
+    "fraudulent" => "cancelled",
+    "shopify_alumni" =>	"shopify_alumni",
+    "affiliate" => "development",
+    "basic" => "basic",
+    "professional" => "shopify",
+    "npo_full" => "npo_full",
+    "shopify_plus" => "shopify_plus",
+    "staff" => "staff",
+    "unlimited" => "advanced",
+    "retail" => "retail",
+    "cancelled" => "cancelled",
+    "dormant" => "pause_and_build",
+    "starter_2022" => "shopify_starter",
+    "plus_partner_sandbox" => "shopify_plus_partner_sandbox",
+    "paid_trial" => "extended_trial",
+    "partner_test" => "developer_preview",
+    "open_learning" => "open_learning",
+    "staff_business" => "staff_business"
+  }
+  DISPLAY_NAME_TO_PLAN = PLAN_TO_DISPLAY_NAME.invert
+
   class Client
     def client
       @client ||= ShopifyAPI::Clients::Graphql::Admin.new(session: ShopifyAPI::Context.active_session)
@@ -123,6 +148,11 @@ module ShopifyGraphql
 
     def client
       Client.new
+    end
+
+    def normalize_display_plan(plan_display_name)
+      return if plan_display_name.blank?
+      plan_display_name.parameterize(separator: "_")
     end
   end
 end
