@@ -13,8 +13,8 @@ module ShopifyGraphql
           primaryDomain {
             host
           }
-          createdAt
-          updatedAt
+          #CREATED_AT#
+          #UPDATED_AT#
           #SHOP_OWNER_NAME#
           currencyCode
           billingAddress {
@@ -47,7 +47,7 @@ module ShopifyGraphql
           checkoutApiSupported
           transactionalSmsDisabled
           enabledPresentmentCurrencies
-          marketingSmsConsentEnabledAtCheckout
+          #SMS_CONSENT#
         }
         #LOCALES_SUBQUERY#
       }
@@ -66,6 +66,15 @@ module ShopifyGraphql
         query.gsub!("#SHOP_OWNER_NAME#", "")
       else
         query.gsub!("#SHOP_OWNER_NAME#", "shopOwnerName")
+      end
+      if ShopifyAPI::Context.api_version.in?(%w[2024-01])
+        query.gsub!("#CREATED_AT#", "")
+        query.gsub!("#UPDATED_AT#", "")
+        query.gsub!("#SMS_CONSENT#", "")
+      else
+        query.gsub!("#CREATED_AT#", "createdAt")
+        query.gsub!("#UPDATED_AT#", "updatedAt")
+        query.gsub!("#SMS_CONSENT#", "marketingSmsConsentEnabledAtCheckout")
       end
       response = execute(query)
       parse_data(response.data, with_locales: with_locales)
