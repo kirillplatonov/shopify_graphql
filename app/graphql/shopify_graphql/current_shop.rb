@@ -77,7 +77,7 @@ module ShopifyGraphql
       plan_display_name = ShopifyGraphql.normalize_plan_display_name(data.shop.plan.displayName)
       plan_name = ShopifyGraphql::DISPLAY_NAME_TO_PLAN[plan_display_name]
       response = OpenStruct.new(
-        id: data.shop.id,
+        id: data.shop.id.split("/").last.to_i,
         name: data.shop.name,
         email: data.shop.email,
         customer_email: data.shop.contactEmail,
