@@ -713,6 +713,69 @@ response.query_cost # => 1
 response.points_maxed?(threshold: 100) # => false
 ```
 
+## Custom apps
+
+In custom apps, if you're using `shopify_app` gem, then the setup is similar public apps. Except `Shop` model which must include class method to make queries to your store:
+
+```rb
+# app/models/shop.rb
+class Shop < ActiveRecord::Base
+  include ShopifyApp::ShopSessionStorageWithScopes
+
+  def self.system
+    new(
+      shopify_domain: "MYSHOPIFY_DOMAIN",
+      shopify_token: "API_ACCESS_TOKEN_FOR_CUSTOM_APP"
+    )
+  end
+end
+```
+
+Using this method, you should be able to make API calls like this:
+
+```rb
+Shop.system.with_shopify_session do
+  GetOrder.call(id: order.shopify_gid)
+end
+```
+
+If you're not using `shopify_app` gem, then you need to setup `ShopifyAPI::Context` manually:
+
+```rb
+# config/initializers/shopify_api.rb
+ShopifyAPI::Context.setup(
+  api_key: "XXX",
+  api_secret_key: "XXXX",
+  scope: "read_orders,read_products",
+  is_embedded: false,
+  api_version: "2024-07",
+  is_private: true,
+)
+```
+
+And create another method in Shop model to make queries to your store:
+
+```rb
+# app/models/shop.rb
+def Shop
+  def self.with_shopify_session(&block)
+    ShopifyAPI::Auth::Session.temp(
+      shop: "MYSHOPIFY_DOMAIN",
+      access_token: "API_ACCESS_TOKEN_FOR_CUSTOM_APP",
+      &block
+    )
+  end
+end
+```
+
+Using this method, you should be able to make API calls like this:
+
+```rb
+Shop.with_shopify_session do
+  GetOrder.call(id: order.shopify_gid)
+end
+```
+
 ## Graphql webhooks
 
 > Since version 10 `shopify_api` gem includes built-in support for Graphql webhooks. If you are using `shopify_api` version 10 or higher you don't need to use this gem to handle Graphql webhooks. See [`shopify_app` documentation](https://github.com/Shopify/shopify_app/blob/main/docs/shopify_app/webhooks.md) for more details.
