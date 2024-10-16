@@ -1,4 +1,8 @@
 module ShopifyGraphql
+  def self.deprecator
+    @deprecator ||= ActiveSupport::Deprecation.new("3.0", "ShopifyGraphql")
+  end
+
   module RedactJobParams
     private
 

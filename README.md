@@ -793,9 +793,10 @@ Shop.with_shopify_session do
 end
 ```
 
-## Graphql webhooks
+## Graphql webhooks (deprecated)
 
-> Since version 10 `shopify_api` gem includes built-in support for Graphql webhooks. If you are using `shopify_api` version 10 or higher you don't need to use this gem to handle Graphql webhooks. See [`shopify_app` documentation](https://github.com/Shopify/shopify_app/blob/main/docs/shopify_app/webhooks.md) for more details.
+> [!WARNING]
+> ShopifyGraphql webhooks are deprecated and will be removed in v3.0. Please use `shopify_app` gem for handling webhooks. See [`shopify_app` documentation](https://github.com/Shopify/shopify_app/blob/main/docs/shopify_app/webhooks.md) for more details.
 
 The gem has built-in support for Graphql webhooks (similar to `shopify_app`). To enable it add the following config to `config/initializers/shopify_app.rb`:
 
