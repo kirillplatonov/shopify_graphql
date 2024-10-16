@@ -1,0 +1,84 @@
+{
+  "data": {
+    "shop": {
+      "id": "gid://shopify/Shop/123",
+      "name": "Example Shop",
+      "email": "user@example.com",
+      "contactEmail": "user@example.com",
+      "myshopifyDomain": "example.myshopify.com",
+      "primaryDomain": {
+        "host": "example-shop.myshopify.com"
+      },
+      "createdAt": "2023-02-18T08:52:34Z",
+      "updatedAt": "2024-10-16T09:02:20Z",
+      "shopOwnerName": "Example User",
+      "currencyCode": "USD",
+      "billingAddress": {
+        "country": "United States",
+        "countryCodeV2": "US",
+        "province": null,
+        "city": null,
+        "address1": null,
+        "address2": "",
+        "zip": null,
+        "latitude": null,
+        "longitude": null,
+        "phone": null
+      },
+      "timezoneAbbreviation": "EDT",
+      "ianaTimezone": "America/New_York",
+      "plan": {
+        "displayName": "Developer Preview"
+      },
+      "taxesIncluded": false,
+      "currencyFormats": {
+        "moneyFormat": "${{amount}}",
+        "moneyInEmailsFormat": "${{amount}}",
+        "moneyWithCurrencyFormat": "${{amount}} USD",
+        "moneyWithCurrencyInEmailsFormat": "${{amount}} USD"
+      },
+      "weightUnit": "POUNDS",
+      "taxShipping": false,
+      "setupRequired": false,
+      "checkoutApiSupported": true,
+      "transactionalSmsDisabled": false,
+      "enabledPresentmentCurrencies": [
+        "AED",
+        "DKK",
+        "DZD",
+        "EUR",
+        "GBP",
+        "HUF",
+        "QAR",
+        "SHP",
+        "USD"
+      ],
+      "marketingSmsConsentEnabledAtCheckout": false
+    },
+    "shopLocales": [
+      {
+        "locale": "da",
+        "primary": false
+      },
+      {
+        "locale": "en",
+        "primary": true
+      },
+      {
+        "locale": "es",
+        "primary": false
+      }
+    ]
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 3,
+      "actualQueryCost": 3,
+      "throttleStatus": {
+        "maximumAvailable": 2000,
+        "currentlyAvailable": 1997,
+        "restoreRate": 100
+      }
+    }
+  }
+}
