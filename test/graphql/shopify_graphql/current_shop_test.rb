@@ -19,4 +19,13 @@ class CurrentShopTest < ActiveSupport::TestCase
     assert_equal "en", shop.primary_locale
     assert_equal ["da", "en", "es"], shop.shop_locales
   end
+
+  test "plan normalization and fallback" do
+    fake("queries/current_shop.json", ShopifyGraphql::CurrentShop::QUERY)
+
+    shop = ShopifyGraphql::CurrentShop.call
+
+    assert_equal "developer_preview", shop.plan_display_name # normalized
+    assert_equal "partner_test", shop.plan_name # mapped fallback
+  end
 end

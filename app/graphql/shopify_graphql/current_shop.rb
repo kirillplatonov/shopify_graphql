@@ -74,6 +74,8 @@ module ShopifyGraphql
     private
 
     def parse_data(data, with_locales: false)
+      plan_display_name = ShopifyGraphql.normalize_display_plan(data.shop.plan.displayName)
+      plan_name = ShopifyGraphql::DISPLAY_NAME_TO_PLAN[plan_display_name]
       response = OpenStruct.new(
         id: data.shop.id,
         name: data.shop.name,
@@ -99,7 +101,8 @@ module ShopifyGraphql
         phone: data.shop.billingAddress.phone,
         timezone: data.shop.timezoneAbbreviation,
         iana_timezone: data.shop.ianaTimezone,
-        shopify_plan_name: data.shop.plan.displayName,
+        plan_name: plan_name,
+        plan_display_name: plan_display_name,
         money_format: data.shop.currencyFormats.moneyFormat,
         money_in_emails_format: data.shop.currencyFormats.moneyInEmailsFormat,
         money_with_currency_format: data.shop.currencyFormats.moneyWithCurrencyFormat,
