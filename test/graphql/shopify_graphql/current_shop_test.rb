@@ -2,7 +2,8 @@ require "test_helper"
 
 class CurrentShopTest < ActiveSupport::TestCase
   test "returns shop" do
-    fake("queries/current_shop.json", ShopifyGraphql::CurrentShop::QUERY)
+    query = ShopifyGraphql::CurrentShop.new.send(:prepare_query, ShopifyGraphql::CurrentShop::QUERY, with_locales: false)
+    fake("queries/current_shop.json", query)
 
     shop = ShopifyGraphql::CurrentShop.call
 
@@ -12,7 +13,8 @@ class CurrentShopTest < ActiveSupport::TestCase
   end
 
   test "returns shop with shop locales" do
-    fake("queries/current_shop.json", ShopifyGraphql::CurrentShop::QUERY)
+    query = ShopifyGraphql::CurrentShop.new.send(:prepare_query, ShopifyGraphql::CurrentShop::QUERY, with_locales: true)
+    fake("queries/current_shop.json", query)
 
     shop = ShopifyGraphql::CurrentShop.call(with_locales: true)
 
@@ -21,7 +23,8 @@ class CurrentShopTest < ActiveSupport::TestCase
   end
 
   test "plan normalization and fallback" do
-    fake("queries/current_shop.json", ShopifyGraphql::CurrentShop::QUERY)
+    query = ShopifyGraphql::CurrentShop.new.send(:prepare_query, ShopifyGraphql::CurrentShop::QUERY, with_locales: false)
+    fake("queries/current_shop.json", query)
 
     shop = ShopifyGraphql::CurrentShop.call
 
