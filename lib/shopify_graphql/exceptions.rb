@@ -1,5 +1,7 @@
 module ShopifyGraphql
   class ConnectionError < ShopifyAPI::Errors::HttpResponseError
+    attr_accessor :error_code, :fields
+
     def initialize(response: nil)
       unless response
         empty_response = ShopifyAPI::Clients::HttpResponse.new(code: 200, headers: {}, body: "")
@@ -72,14 +74,6 @@ module ShopifyGraphql
   end
 
   # Custom error for Graphql userErrors handling
-  class UserError < StandardError
-    attr_reader :response, :message, :code, :fields
-
-    def initialize(response:, message:, code:, fields:)
-      @response = response
-      @message = message
-      @code = code
-      @fields = fields
-    end
+  class UserError < ConnectionError
   end
 end

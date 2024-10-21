@@ -105,31 +105,33 @@ module ShopifyGraphql
         doc: error.extensions&.documentation
       )
 
-      case error_code
-      when "THROTTLED"
-        raise TooManyRequests.new(response: response), error_message
-      when "INTERNAL_SERVER_ERROR"
-        raise ServerError.new(response: response), error_message
-      else
-        raise ConnectionError.new(response: response), error_message
-      end
+      exception = case error_code
+        when "THROTTLED"
+          TooManyRequests.new(response: response)
+        when "INTERNAL_SERVER_ERROR"
+          ServerError.new(response: response)
+        else
+          ConnectionError.new(response: response)
+        end
+      exception.error_code = error_code
+      raise exception, error_message
     end
 
     def handle_user_errors(response)
       return response if response.userErrors.blank?
 
       error = response.userErrors.first
+      error_code = error.code
       error_message = generate_error_message(
         message: error.message,
-        code: error.code,
+        code: error_code,
         fields: error.field,
       )
-      raise UserError.new(
-        response: response,
-        message: error.message,
-        code: error.code,
-        fields: error.field,
-      ), error_message
+
+      exception = UserError.new(response: response)
+      exception.error_code = error_code
+      exception.fields = error.field
+      raise exception, error_message
     end
 
     def generate_error_message(message: nil, code: nil, doc: nil, fields: nil)

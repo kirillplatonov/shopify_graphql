@@ -1,0 +1,11 @@
+{
+  "errors": [
+    {
+      "message": "Internal error. Looks like something went wrong on our end.\nRequest ID: XXXXX (include this in support requests).",
+      "extensions": {
+        "code": "INTERNAL_SERVER_ERROR",
+        "requestId": "XXXXX"
+      }
+    }
+  ]
+}
