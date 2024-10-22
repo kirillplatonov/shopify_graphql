@@ -60,4 +60,15 @@ class ErrorHandlingTest < ActiveSupport::TestCase
       assert_includes error.message, "Looks like something went wrong on our end"
     end
   end
+
+  test "handle http response error" do
+    fake("error_page.html", SIMPLE_QUERY)
+
+    begin
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    rescue ShopifyAPI::Errors::HttpResponseError => error
+      assert_equal 200, error.code
+      assert_includes error.message, "Invalid JSON response"
+    end
+  end
 end
