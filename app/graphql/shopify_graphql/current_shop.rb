@@ -48,6 +48,10 @@ module ShopifyGraphql
           transactionalSmsDisabled
           enabledPresentmentCurrencies
           #SMS_CONSENT#
+          resourceLimits {
+            maxProductOptions
+            maxProductVariants
+          }
         }
         #LOCALES_SUBQUERY#
       }
@@ -127,7 +131,9 @@ module ShopifyGraphql
         checkout_api_supported: data.shop.checkoutApiSupported,
         transactional_sms_disabled: data.shop.transactionalSmsDisabled,
         enabled_presentment_currencies: data.shop.enabledPresentmentCurrencies,
-        marketing_sms_consent_enabled_at_checkout: data.shop.marketingSmsConsentEnabledAtCheckout
+        marketing_sms_consent_enabled_at_checkout: data.shop.marketingSmsConsentEnabledAtCheckout,
+        max_product_options: data.shop.resourceLimits.maxProductOptions,
+        max_product_variants: data.shop.resourceLimits.maxProductVariants
       )
       if with_locales
         response.primary_locale = data.shopLocales.find(&:primary).locale
