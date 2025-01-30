@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    shopify_graphql (2.0.0)
+    shopify_graphql (2.0.1)
       activesupport (>= 6.1.0)
       rails (>= 6.1.0)
       shopify_api (>= 13.4)
