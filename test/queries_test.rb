@@ -39,4 +39,21 @@ class QueriesTest < ActiveSupport::TestCase
     assert_equal "Test product", product.title
     assert_equal "DRAFT", product.status
   end
+
+  test "query with headers" do
+    custom_headers = { "X-Custom-Header" => "test-value" }
+    
+    stub_request(:post, API_PATH)
+      .with(
+        body: { query: SIMPLE_QUERY, variables: {} },
+        headers: custom_headers
+      )
+      .to_return(body: File.read(File.expand_path("fixtures/queries/shop.json", __dir__)))
+
+    response = ShopifyGraphql.execute(SIMPLE_QUERY, headers: custom_headers)
+    shop = response.data.shop
+
+    assert_equal "Graphql Gem Test", shop.name
+    assert_requested :post, API_PATH, headers: custom_headers
+  end
 end
