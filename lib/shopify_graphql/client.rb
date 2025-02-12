@@ -29,8 +29,8 @@ module ShopifyGraphql
       @client ||= ShopifyAPI::Clients::Graphql::Admin.new(session: ShopifyAPI::Context.active_session)
     end
 
-    def execute(query, **variables)
-      response = client.query(query: query, variables: variables)
+    def execute(query, headers: nil, **variables)
+      response = client.query(query: query, variables: variables, headers: headers)
       Response.new(handle_response(response))
     rescue ShopifyAPI::Errors::HttpResponseError => e
       Response.new(handle_response(e.response, e))

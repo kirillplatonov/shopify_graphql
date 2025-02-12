@@ -86,6 +86,68 @@ puts product.title
 ```
 </details>
 
+### Query with custom headers
+
+<details><summary>Click to expand</summary>
+You can pass custom headers to any GraphQL query or mutation by using the `headers` parameter. A common use case is setting the `Accept-Language` header to retrieve content in specific languages:
+
+```rb
+# Pass custom headers to a direct GraphQL call to get French content
+response = ShopifyGraphql.execute(QUERY, headers: { "Accept-Language" => "fr" })
+
+# Or create a language-aware query wrapper
+class GetProduct
+  include ShopifyGraphql::Query
+
+  QUERY = <<~GRAPHQL
+    query($id: ID!) {
+      product(id: $id) {
+        id
+        title
+        description
+        seo {
+          title
+          description
+        }
+      }
+    }
+  GRAPHQL
+
+  def call(id:, language: nil)
+    headers = language ? { "Accept-Language" => language } : nil
+    response = execute(QUERY, headers: headers, id: id)
+    response.data = response.data.product
+    response
+  end
+end
+
+# Then use it to get content in different languages
+french_product = GetProduct.call(
+  id: "gid://shopify/Product/12345",
+  language: "fr"
+).data
+
+puts french_product.title       # => "Le Produit"
+puts french_product.description # => "Description en français"
+
+# Get content in Japanese
+japanese_product = GetProduct.call(
+  id: "gid://shopify/Product/12345",
+  language: "ja"
+).data
+
+puts japanese_product.title     # => "商品名"
+puts japanese_product.description # => "商品の説明"
+```
+
+The `Accept-Language` header tells Shopify which language to return the content in. This is particularly useful for:
+- Retrieving translated content for products, collections, and pages
+- Building multi-language storefronts
+- Showing localized SEO content
+
+You can also use custom headers for other purposes like passing metadata or context with your GraphQL requests.
+</details>
+
 ### Query with data parsing
 
 <details><summary>Click to expand</summary>
