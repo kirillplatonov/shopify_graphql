@@ -13,6 +13,8 @@ module ShopifyGraphql
             completedAt
             fileSize
             url
+            objectCount
+            rootObjectCount
           }
         }
       }
@@ -37,7 +39,9 @@ module ShopifyGraphql
         error_code: data.errorCode,
         created_at: Time.find_zone("UTC").parse(data.createdAt),
         completed_at: data.completedAt ? Time.find_zone("UTC").parse(data.completedAt) : nil,
-        url: data.url
+        url: data.url,
+        object_count: data.objectCount,
+        root_object_count: data.rootObjectCount,
       )
     end
   end
