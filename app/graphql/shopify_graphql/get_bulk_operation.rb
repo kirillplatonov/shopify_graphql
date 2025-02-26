@@ -40,8 +40,8 @@ module ShopifyGraphql
         created_at: Time.find_zone("UTC").parse(data.createdAt),
         completed_at: data.completedAt ? Time.find_zone("UTC").parse(data.completedAt) : nil,
         url: data.url,
-        object_count: data.objectCount,
-        root_object_count: data.rootObjectCount,
+        object_count: data.objectCount.to_i,
+        root_object_count: data.rootObjectCount.to_i,
       )
     end
   end
