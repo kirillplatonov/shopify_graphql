@@ -10,6 +10,7 @@ module ShopifyGraphql
             status
           }
           userErrors {
+            code
             field
             message
           }
