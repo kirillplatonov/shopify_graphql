@@ -113,34 +113,58 @@ module ShopifyGraphql
         else
           ConnectionError.new(response: response)
         end
-      exception.error_code = error_code
+      exception.error_codes = [ error_code ]
+      exception.messages = [ error.message ]
       raise exception, error_message
     end
 
     def handle_user_errors(response)
       return response if response.userErrors.blank?
 
-      error = response.userErrors.first
-      error_code = error.code
-      error_message = generate_error_message(
-        message: error.message,
-        code: error_code,
-        fields: error.field,
+      errors = response.userErrors
+      error_message = generate_user_errors_message(
+        messages: errors.map(&:message),
+        codes: errors.map(&:code),
+        fields: errors.map(&:field),
       )
 
       exception = UserError.new(response: response)
-      exception.error_code = error_code
-      exception.fields = error.field
+      exception.error_codes = errors.map(&:code)
+      exception.fields = errors.map(&:field)
+      exception.messages = errors.map(&:message)
       raise exception, error_message
     end
 
-    def generate_error_message(message: nil, code: nil, doc: nil, fields: nil)
+    def generate_error_message(message: nil, code: nil, doc: nil)
       string = "Failed.".dup
       string << " Response code = #{code}." if code
       string << " Response message = #{message}.".gsub("..", ".") if message
       string << " Documentation = #{doc}." if doc
-      string << " Fields = #{fields}." if fields
       string
+    end
+
+    def generate_user_errors_message(messages: nil, codes: nil, fields: [])
+      if fields.any?
+        field_count = fields.size
+        result = ["#{field_count} #{"field".pluralize(field_count)} have failed:"]
+        
+        fields.each do |field|
+          field_details = ["\n-"]
+          field_details << "Response code = #{codes[0]}." if codes&.at(0)
+          field_details << "Response message = #{messages[0]}.".gsub("..", ".") if messages&.at(0)
+          field_details << "Field = #{field}." if field
+
+          result << field_details.join(" ")
+        end
+        
+        result.join("\n")
+      else
+        result = ["Failed."]
+        result << "Response code = #{codes.join(", ")}." if codes&.any?
+        result << "Response message = #{messages&.join(", ")}.".gsub("..", ".") if messages&.any?
+        
+        result.join(" ")
+      end
     end
   end
 

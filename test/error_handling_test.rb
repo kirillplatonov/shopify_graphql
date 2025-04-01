@@ -43,9 +43,10 @@ class ErrorHandlingTest < ActiveSupport::TestCase
       ShopifyGraphql::Client.new.handle_user_errors(response.data.metafieldDefinitionCreate)
     rescue ShopifyGraphql::UserError => error
       assert_equal 200, error.code
-      assert_equal "TAKEN", error.error_code
+      assert error.error_codes.include?("TAKEN")
       assert_includes error.message, "Key is in use for Product metafields"
-      assert_equal ["definition", "key"], error.fields
+      assert_includes error.messages, "Key is in use for Product metafields on the 'xxx' namespace."
+      assert error.fields.include?(["definition", "key"])
     end
   end
 
@@ -56,8 +57,8 @@ class ErrorHandlingTest < ActiveSupport::TestCase
       ShopifyGraphql.execute(SIMPLE_QUERY)
     rescue ShopifyGraphql::ServerError => error
       assert_equal 200, error.code
-      assert_equal "INTERNAL_SERVER_ERROR", error.error_code
-      assert_includes error.message, "Looks like something went wrong on our end"
+      assert_equal ["INTERNAL_SERVER_ERROR"], error.error_codes
+      assert_includes error.messages, "Internal error. Looks like something went wrong on our end.\nRequest ID: XXXXX (include this in support requests)."
     end
   end
 
