@@ -1,6 +1,6 @@
 module ShopifyGraphql
   class ConnectionError < ShopifyAPI::Errors::HttpResponseError
-    attr_accessor :error_codes, :fields, :messages
+    attr_accessor :error_code, :error_codes, :fields, :messages
 
     def initialize(response: nil)
       unless response

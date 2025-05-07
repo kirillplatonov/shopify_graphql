@@ -113,6 +113,7 @@ module ShopifyGraphql
         else
           ConnectionError.new(response: response)
         end
+      exception.error_code = error_code
       exception.error_codes = [ error_code ]
       exception.messages = [ error.message ]
       raise exception, error_message
@@ -121,6 +122,7 @@ module ShopifyGraphql
     def handle_user_errors(response)
       return response if response.userErrors.blank?
 
+      error = response.userErrors.first
       errors = response.userErrors
       error_message = generate_user_errors_message(
         messages: errors.map(&:message),
@@ -129,6 +131,7 @@ module ShopifyGraphql
       )
 
       exception = UserError.new(response: response)
+      exception.error_code = error.code
       exception.error_codes = errors.map(&:code)
       exception.fields = errors.map(&:field)
       exception.messages = errors.map(&:message)
@@ -148,10 +151,10 @@ module ShopifyGraphql
         field_count = fields.size
         result = ["#{field_count} #{"field".pluralize(field_count)} have failed:"]
         
-        fields.each do |field|
+        fields.each.with_index do |field, index|
           field_details = ["\n-"]
-          field_details << "Response code = #{codes[0]}." if codes&.at(0)
-          field_details << "Response message = #{messages[0]}.".gsub("..", ".") if messages&.at(0)
+          field_details << "Response code = #{codes[index]}." if codes&.at(index)
+          field_details << "Response message = #{messages[index]}.".gsub("..", ".") if messages&.at(index)
           field_details << "Field = #{field}." if field
 
           result << field_details.join(" ")
