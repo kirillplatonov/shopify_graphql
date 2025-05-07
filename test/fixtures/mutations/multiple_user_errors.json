@@ -1,0 +1,38 @@
+{
+  "data": {
+    "metafieldsSet": {
+      "metafields": [],
+      "userErrors": [
+        {
+          "field": [
+            "metafields",
+            "0",
+            "value"
+          ],
+          "message": "Value does not exist in provided choices: [\"Male\", \"Female\", \"Other\"].",
+          "code": "INVALID_VALUE"
+        },
+        {
+          "field": [
+            "metafields",
+            "1",
+            "value"
+          ],
+          "message": "Value has a maximum length of 10.",
+          "code": "INVALID_VALUE"
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 10,
+      "actualQueryCost": 10,
+      "throttleStatus": {
+        "maximumAvailable": 2000,
+        "currentlyAvailable": 1990,
+        "restoreRate": 100
+      }
+    }
+  }
+}
