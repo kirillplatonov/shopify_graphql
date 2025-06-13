@@ -52,6 +52,7 @@ module ShopifyGraphql
             maxProductOptions
             maxProductVariants
           }
+          #FEATURES#
         }
         #LOCALES_SUBQUERY#
       }
@@ -60,6 +61,11 @@ module ShopifyGraphql
       shopLocales {
         locale
         primary
+      }
+    GRAPHQL
+    FEATURES_SUBQUERY = <<~GRAPHQL
+      features {
+        unifiedMarkets
       }
     GRAPHQL
 
@@ -86,6 +92,11 @@ module ShopifyGraphql
         query.gsub!("#CREATED_AT#", "createdAt")
         query.gsub!("#UPDATED_AT#", "updatedAt")
         query.gsub!("#SMS_CONSENT#", "marketingSmsConsentEnabledAtCheckout")
+      end
+      if ShopifyAPI::Context.api_version.in?(%w[2024-01 2024-04 2024-07 2024-10 2025-01])
+        query.gsub!("#FEATURES#", "")
+      else
+        query.gsub!("#FEATURES#", FEATURES_SUBQUERY)
       end
       query
     end
@@ -133,7 +144,8 @@ module ShopifyGraphql
         enabled_presentment_currencies: data.shop.enabledPresentmentCurrencies,
         marketing_sms_consent_enabled_at_checkout: data.shop.marketingSmsConsentEnabledAtCheckout,
         max_product_options: data.shop.resourceLimits.maxProductOptions,
-        max_product_variants: data.shop.resourceLimits.maxProductVariants
+        max_product_variants: data.shop.resourceLimits.maxProductVariants,
+        unified_markets: !!data.shop&.features&.unifiedMarkets
       )
       if with_locales
         response.primary_locale = data.shopLocales.find(&:primary).locale
