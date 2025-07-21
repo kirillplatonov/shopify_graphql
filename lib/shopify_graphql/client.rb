@@ -30,6 +30,7 @@ module ShopifyGraphql
     end
 
     def execute(query, headers: nil, **variables)
+      variables = convert_variables_to_camel_case(variables) if ShopifyGraphql.configuration.convert_case
       response = client.query(query: query, variables: variables, headers: headers)
       Response.new(handle_response(response))
     rescue ShopifyAPI::Errors::HttpResponseError => e
@@ -48,7 +49,11 @@ module ShopifyGraphql
 
     def parsed_body(response)
       if response.body.is_a?(Hash)
-        JSON.parse(response.body.to_json, object_class: OpenStruct)
+        if ShopifyGraphql.configuration.convert_case
+          JSON.parse(response.body.deep_transform_keys(&:underscore).to_json, object_class: OpenStruct)
+        else
+          JSON.parse(response.body.to_json, object_class: OpenStruct)
+        end
       else
         response.body
       end
@@ -168,6 +173,12 @@ module ShopifyGraphql
         
         result.join(" ")
       end
+    end
+
+    private
+
+    def convert_variables_to_camel_case(variables)
+      variables.deep_transform_keys { |key| key.to_s.camelize(:lower) }
     end
   end
 
