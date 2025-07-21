@@ -5,9 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Testing
-- `rake test` - Run all tests
-- `bundle exec rake test` - Run all tests with bundler
-- `ruby -Itest test/specific_test.rb` - Run a single test file
+- All tests: `rails test:all`
+- Unit/integration: `rails test`
+- System tests: `rails test:system`
+- Single test: `rails test TEST=path/to/test_file.rb:LINE_NUMBER`
 
 ### Development
 - `bundle install` - Install gem dependencies
