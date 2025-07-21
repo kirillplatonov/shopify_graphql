@@ -72,7 +72,7 @@ module ShopifyGraphql
     def call(with_locales: false)
       query = prepare_query(QUERY, with_locales: with_locales)
       response = execute(query)
-      parse_data(response.data, with_locales: with_locales)
+      parse_data(response, with_locales: with_locales)
     end
 
     private
@@ -101,10 +101,11 @@ module ShopifyGraphql
       query
     end
 
-    def parse_data(data, with_locales: false)
+    def parse_data(response, with_locales: false)
+      data = response.data
       plan_display_name = ShopifyGraphql.normalize_plan_display_name(data.shop.plan.displayName)
       plan_name = ShopifyGraphql::DISPLAY_NAME_TO_PLAN[plan_display_name]
-      response = OpenStruct.new(
+      shop_data = OpenStruct.new(
         id: data.shop.id.split("/").last.to_i,
         name: data.shop.name,
         email: data.shop.email,
@@ -145,13 +146,14 @@ module ShopifyGraphql
         marketing_sms_consent_enabled_at_checkout: data.shop.marketingSmsConsentEnabledAtCheckout,
         max_product_options: data.shop.resourceLimits.maxProductOptions,
         max_product_variants: data.shop.resourceLimits.maxProductVariants,
-        unified_markets: !!data.shop&.features&.unifiedMarkets
+        unified_markets: !!data.shop&.features&.unifiedMarkets,
+        graphql_points_limit: response.points_limit
       )
       if with_locales
-        response.primary_locale = data.shopLocales.find(&:primary).locale
-        response.shop_locales = data.shopLocales.map(&:locale)
+        shop_data.primary_locale = data.shopLocales.find(&:primary).locale
+        shop_data.shop_locales = data.shopLocales.map(&:locale)
       end
-      response
+      shop_data
     end
   end
 end
