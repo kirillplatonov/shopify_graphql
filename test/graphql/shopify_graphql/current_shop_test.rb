@@ -12,6 +12,7 @@ class CurrentShopTest < ActiveSupport::TestCase
     assert_equal "example.myshopify.com", shop.myshopify_domain
     assert_equal 3, shop.max_product_options
     assert_equal 100, shop.max_product_variants
+    assert_equal 2000, shop.graphql_points_limit
   end
 
   test "returns shop with shop locales" do
