@@ -36,6 +36,119 @@ shop.with_shopify_session do
 end
 ```
 
+## Configuration
+
+### Case Conversion
+
+The gem supports automatic case conversion between Ruby's snake_case conventions and GraphQL's camelCase conventions. This feature is disabled by default to maintain backward compatibility.
+
+To enable case conversion, configure it in your initializer:
+
+```rb
+# config/initializers/shopify_graphql.rb
+ShopifyGraphql.configure do |config|
+  config.convert_case = true
+end
+```
+
+When enabled, the gem will:
+- Convert snake_case variables to camelCase when sending GraphQL requests
+- Convert camelCase response keys to snake_case for easier access in Ruby
+
+<details><summary>Example: Request Variable Conversion</summary>
+
+```rb
+# With convert_case = true
+class GetProduct
+  include ShopifyGraphql::Query
+
+  QUERY = <<~GRAPHQL
+    query($product_id: ID!, $include_variants: Boolean!) {
+      product(id: $product_id) {
+        title
+        variants(first: 10) @include(if: $include_variants) {
+          edges {
+            node {
+              displayName
+            }
+          }
+        }
+      }
+    }
+  GRAPHQL
+
+  def call(product_id:, include_variants: false)
+    # Variables are automatically converted: product_id → productId, include_variants → includeVariants
+    response = execute(QUERY, product_id: product_id, include_variants: include_variants)
+    response.data.product
+  end
+end
+
+# Usage
+product = GetProduct.call(
+  product_id: "gid://shopify/Product/12345",
+  include_variants: true
+)
+```
+
+</details>
+
+<details><summary>Example: Response Key Conversion</summary>
+
+```rb
+# With convert_case = true
+class GetProduct
+  include ShopifyGraphql::Query
+
+  QUERY = <<~GRAPHQL
+    query($id: ID!) {
+      product(id: $id) {
+        title
+        featuredImage {
+          originalSrc
+          altText
+        }
+        variants(first: 5) {
+          edges {
+            node {
+              displayName
+              selectedOptions {
+                name
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  GRAPHQL
+
+  def call(id:)
+    response = execute(QUERY, id: id)
+    response.data.product
+  end
+end
+
+# Usage - all keys are automatically converted to snake_case
+product = GetProduct.call(id: "gid://shopify/Product/12345")
+
+puts product.title
+puts product.featured_image.original_src    # originalSrc → original_src
+puts product.featured_image.alt_text        # altText → alt_text
+
+product.variants.edges.each do |edge|
+  puts edge.node.display_name               # displayName → display_name
+  
+  edge.node.selected_options.each do |option|
+    puts "#{option.name}: #{option.value}"  # Keys converted automatically
+  end
+end
+```
+
+</details>
+
+**Note:** Case conversion adds a small performance overhead due to key transformation. Enable it only if you prefer Ruby naming conventions over GraphQL's camelCase.
+
 ## Conventions
 
 To better organize your Graphql code use the following conventions:

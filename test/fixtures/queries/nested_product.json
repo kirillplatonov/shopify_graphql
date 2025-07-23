@@ -1,0 +1,108 @@
+{
+  "data": {
+    "product": {
+      "id": "gid://shopify/Product/12345",
+      "title": "Complex Product",
+      "featuredImage": {
+        "originalSrc": "https://example.com/image.jpg",
+        "altText": "Product image",
+        "transformedSrc": "https://example.com/image_400x400.jpg"
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/1",
+              "displayName": "Small / Red",
+              "selectedOptions": [
+                {
+                  "name": "Size",
+                  "value": "Small"
+                },
+                {
+                  "name": "Color",
+                  "value": "Red"
+                }
+              ],
+              "price": {
+                "amount": "29.99",
+                "currencyCode": "USD"
+              },
+              "image": {
+                "originalSrc": "https://example.com/variant1.jpg",
+                "altText": "Red variant"
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/2",
+              "displayName": "Large / Blue",
+              "selectedOptions": [
+                {
+                  "name": "Size",
+                  "value": "Large"
+                },
+                {
+                  "name": "Color", 
+                  "value": "Blue"
+                }
+              ],
+              "price": {
+                "amount": "34.99",
+                "currencyCode": "USD"
+              },
+              "image": {
+                "originalSrc": "https://example.com/variant2.jpg",
+                "altText": "Blue variant"
+              }
+            }
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": false,
+          "hasPreviousPage": false
+        }
+      },
+      "metafields": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/Metafield/1",
+              "namespace": "custom",
+              "key": "care_instructions",
+              "value": "Machine wash cold",
+              "createdAt": "2024-01-01T00:00:00Z",
+              "updatedAt": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/Metafield/2",
+              "namespace": "inventory",
+              "key": "low_stock_threshold",
+              "value": "5",
+              "createdAt": "2024-01-01T00:00:00Z",
+              "updatedAt": "2024-01-02T00:00:00Z"
+            }
+          }
+        ]
+      },
+      "seo": {
+        "title": "SEO Title",
+        "description": "SEO Description"
+      }
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 15,
+      "actualQueryCost": 15,
+      "throttleStatus": {
+        "maximumAvailable": 1000,
+        "currentlyAvailable": 985,
+        "restoreRate": 50
+      }
+    }
+  }
+}

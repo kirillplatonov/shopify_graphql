@@ -4,10 +4,12 @@ module ShopifyGraphql
     attr_accessor :webhook_jobs_namespace
     attr_accessor :webhook_enabled_environments
     attr_accessor :webhooks_manager_queue_name
+    attr_accessor :convert_case
 
     def initialize
       @webhooks_manager_queue_name = Rails.application.config.active_job.queue_name
       @webhook_enabled_environments = ['production']
+      @convert_case = false
     end
 
     def has_webhooks?
