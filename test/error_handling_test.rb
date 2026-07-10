@@ -83,6 +83,18 @@ class ErrorHandlingTest < ActiveSupport::TestCase
     end
   end
 
+  test "shop pending termination error" do
+    fake("mutations/shop_pending_termination.json", SIMPLE_QUERY)
+
+    error = assert_raises ShopifyGraphql::ShopPendingTermination do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+    assert_equal 200, error.code
+    assert_equal "SHOP_PENDING_TERMINATION", error.error_code
+    assert_equal ["SHOP_PENDING_TERMINATION"], error.error_codes
+    assert_includes error.message, "Shop is under review"
+  end
+
   test "handle http response error" do
     fake("error_page.html", SIMPLE_QUERY)
 

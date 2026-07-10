@@ -65,6 +65,10 @@ module ShopifyGraphql
   class ShopLocked < ClientError # :nodoc:
   end
 
+  # GraphQL SHOP_PENDING_TERMINATION error code (shop is under review)
+  class ShopPendingTermination < ClientError # :nodoc:
+  end
+
   # 429 Too Many Requests
   class TooManyRequests < ClientError # :nodoc:
   end

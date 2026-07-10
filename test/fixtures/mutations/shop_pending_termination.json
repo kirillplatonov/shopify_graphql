@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "message": "Access denied for products field. Shop is under review.",
+      "extensions": {
+        "code": "SHOP_PENDING_TERMINATION"
+      }
+    }
+  ]
+}
