@@ -110,6 +110,8 @@ module ShopifyGraphql
           TooManyRequests.new(response: response)
         when "INTERNAL_SERVER_ERROR"
           ServerError.new(response: response)
+        when "SHOP_PENDING_TERMINATION"
+          ShopPendingTermination.new(response: response)
         else
           ConnectionError.new(response: response)
         end
