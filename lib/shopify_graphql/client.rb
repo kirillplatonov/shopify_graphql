@@ -26,7 +26,13 @@ module ShopifyGraphql
 
   class Client
     def client
-      @client ||= ShopifyAPI::Clients::Graphql::Admin.new(session: ShopifyAPI::Context.active_session)
+      session = ShopifyAPI::Context.active_session
+      if @client.nil? || @access_token != session&.access_token || @shop != session&.shop
+        @client = ShopifyAPI::Clients::Graphql::Admin.new(session: session)
+        @access_token = session.access_token&.dup
+        @shop = session.shop.dup
+      end
+      @client
     end
 
     def execute(query, headers: nil, **variables)
