@@ -25,6 +25,20 @@ module ShopifyGraphql
   DISPLAY_NAME_TO_PLAN = PLAN_TO_DISPLAY_NAME.invert
 
   class Client
+    NETWORK_ERRORS = [
+      Errno::ECONNRESET,
+      Errno::ECONNABORTED,
+      Errno::ECONNREFUSED,
+      Errno::EPIPE,
+      Errno::ENETUNREACH,
+      Errno::EHOSTUNREACH,
+      Errno::ETIMEDOUT,
+      Net::ReadTimeout,
+      Net::OpenTimeout,
+      OpenSSL::SSL::SSLError,
+      EOFError
+    ].freeze
+
     def client
       session = ShopifyAPI::Context.active_session
       if @client.nil? || @access_token != session&.access_token || @shop != session&.shop
@@ -42,7 +56,7 @@ module ShopifyGraphql
       Response.new(handle_response(e.response, e))
     rescue JSON::ParserError => e
       raise ServerError.new(response: response), "Invalid JSON response: #{e.message}"
-    rescue Errno::ECONNRESET, Errno::EPIPE, Errno::ECONNREFUSED, Errno::ENETUNREACH, Net::ReadTimeout, Net::OpenTimeout, OpenSSL::SSL::SSLError, EOFError => e
+    rescue *NETWORK_ERRORS => e
       raise ServerError.new(response: response), "Network error: #{e.message}"
     rescue => e
       if (defined?(Socket::ResolutionError) and e.is_a?(Socket::ResolutionError))

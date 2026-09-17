@@ -27,6 +27,15 @@ class ErrorHandlingTest < ActiveSupport::TestCase
     end
   end
 
+  test "handles aborted connection" do
+    fake_error(Errno::ECONNABORTED)
+
+    error = assert_raises ShopifyGraphql::ServerError do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+    assert_includes error.message, "Network error"
+  end
+
   test "invalid input error" do
     fake("mutations/invalid_input_error.json", SIMPLE_QUERY)
 
