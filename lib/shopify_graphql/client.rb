@@ -76,7 +76,7 @@ module ShopifyGraphql
 
     def handle_response(response, error = nil)
       case response.code
-      when 200..400
+      when 200...400
         handle_graphql_errors(response)
       when 400
         raise BadRequest.new(response: response), error.message
@@ -113,11 +113,23 @@ module ShopifyGraphql
 
     def handle_graphql_errors(response)
       parsed_body = parsed_body(response)
-      if parsed_body.errors.nil? || parsed_body.errors.empty?
-        return parsed_body(response)
+      errors = parsed_body.errors
+      if errors.nil? || errors.empty?
+        return parsed_body
       end
 
-      error = parsed_body.errors.first
+      unless errors.is_a?(Array) && errors.first.is_a?(OpenStruct)
+        message = if errors.is_a?(OpenStruct)
+          errors.to_h.map { |key, value| "#{key}: #{value}" }.join(", ")
+        else
+          Array(errors).join(", ")
+        end
+        exception = ConnectionError.new(response: response)
+        exception.messages = [ message ]
+        raise exception, generate_error_message(message: message)
+      end
+
+      error = errors.first
       error_code = error.extensions&.code
       error_message = generate_error_message(
         message: error.message,

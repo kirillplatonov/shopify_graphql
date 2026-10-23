@@ -104,6 +104,60 @@ class ErrorHandlingTest < ActiveSupport::TestCase
     assert_includes error.message, "Shop is under review"
   end
 
+  test "bad request with hash errors" do
+    stub_request(:post, API_PATH)
+      .to_return(status: 400, body: { errors: { query: "Required parameter missing or invalid" } }.to_json)
+
+    error = assert_raises ShopifyGraphql::BadRequest do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+    assert_equal 400, error.code
+    assert_includes error.message, "Required parameter missing or invalid"
+  end
+
+  test "bad request with string errors" do
+    stub_request(:post, API_PATH)
+      .to_return(status: 400, body: { errors: "Bad request" }.to_json)
+
+    error = assert_raises ShopifyGraphql::BadRequest do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+    assert_equal 400, error.code
+    assert_includes error.message, "Bad request"
+  end
+
+  test "string errors" do
+    stub_request(:post, API_PATH)
+      .to_return(body: { errors: "Something went wrong" }.to_json)
+
+    error = assert_raises ShopifyGraphql::ConnectionError do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+    assert_equal 200, error.code
+    assert_includes error.message, "Something went wrong"
+    assert_equal ["Something went wrong"], error.messages
+  end
+
+  test "hash errors" do
+    stub_request(:post, API_PATH)
+      .to_return(body: { errors: { query: "Required parameter missing or invalid" } }.to_json)
+
+    error = assert_raises ShopifyGraphql::ConnectionError do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+    assert_equal 200, error.code
+    assert_equal "Failed. Response message = query: Required parameter missing or invalid.", error.message
+    assert_equal ["query: Required parameter missing or invalid"], error.messages
+  end
+
+  test "success response" do
+    fake("queries/shop.json", SIMPLE_QUERY)
+
+    response = ShopifyGraphql.execute(SIMPLE_QUERY)
+    assert_equal "Graphql Gem Test", response.data.shop.name
+    assert_equal 999, response.points_left
+  end
+
   test "handle http response error" do
     fake("error_page.html", SIMPLE_QUERY)
 
