@@ -63,6 +63,17 @@
         "maxProductVariants": 100
       }
     },
+    "currentAppInstallation": {
+      "id": "gid://shopify/AppInstallation/456"
+    },
+    "onlineStore": {
+      "passwordProtection": {
+        "enabled": true
+      }
+    },
+    "productsCount": {
+      "count": 42
+    },
     "shopLocales": [
       {
         "locale": "da",

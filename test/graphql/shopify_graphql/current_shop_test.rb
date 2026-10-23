@@ -42,8 +42,8 @@ class CurrentShopTest < ActiveSupport::TestCase
     shop = ShopifyGraphql::CurrentShop.call
 
     assert_equal "Developer Preview", shop.plan_public_display_name
-    assert_equal false, shop.shopify_plus
-    assert_equal true, shop.partner_development
+    assert_equal false, shop.plan_shopify_plus
+    assert_equal true, shop.plan_partner_development
   end
 
   test "returns shop address" do
@@ -72,5 +72,29 @@ class CurrentShopTest < ActiveSupport::TestCase
     assert_equal "2024-10-16T09:02:20Z", shop.updated_at
     assert_equal false, shop.marketing_sms_consent_enabled_at_checkout
     assert_equal true, shop.unified_markets
+    assert_equal "gid://shopify/AppInstallation/456", shop.app_installation_id
+    assert_equal true, shop.password_enabled
+  end
+
+  test "does not query products count by default" do
+    query = ShopifyGraphql::CurrentShop.new.send(:prepare_query, ShopifyGraphql::CurrentShop::QUERY, with_locales: false)
+    fake("queries/current_shop.json", query)
+
+    shop = ShopifyGraphql::CurrentShop.call
+
+    assert_not_includes query, "productsCount"
+    assert_requested :post, API_PATH, body: { query: query, variables: {} }
+    assert_nil shop.products_count
+  end
+
+  test "returns products count" do
+    query = ShopifyGraphql::CurrentShop.new.send(:prepare_query, ShopifyGraphql::CurrentShop::QUERY, with_locales: false, with_products_count: true)
+    fake("queries/current_shop.json", query)
+
+    shop = ShopifyGraphql::CurrentShop.call(with_products_count: true)
+
+    assert_includes query, "productsCount"
+    assert_requested :post, API_PATH, body: { query: query, variables: {} }
+    assert_equal 42, shop.products_count
   end
 end

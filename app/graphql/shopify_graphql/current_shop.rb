@@ -57,7 +57,16 @@ module ShopifyGraphql
             maxProductVariants
           }
         }
+        currentAppInstallation {
+          id
+        }
+        onlineStore {
+          passwordProtection {
+            enabled
+          }
+        }
         #LOCALES_SUBQUERY#
+        #PRODUCTS_COUNT_SUBQUERY#
       }
     GRAPHQL
     LOCALES_SUBQUERY = <<~GRAPHQL
@@ -66,20 +75,26 @@ module ShopifyGraphql
         primary
       }
     GRAPHQL
+    PRODUCTS_COUNT_SUBQUERY = <<~GRAPHQL
+      productsCount {
+        count
+      }
+    GRAPHQL
 
-    def call(with_locales: false)
-      query = prepare_query(QUERY, with_locales: with_locales)
+    def call(with_locales: false, with_products_count: false)
+      query = prepare_query(QUERY, with_locales: with_locales, with_products_count: with_products_count)
       response = execute(query)
-      parse_data(response, with_locales: with_locales)
+      parse_data(response, with_locales: with_locales, with_products_count: with_products_count)
     end
 
     private
 
-    def prepare_query(query, with_locales:)
-      query.gsub("#LOCALES_SUBQUERY#", with_locales ? LOCALES_SUBQUERY : "")
+    def prepare_query(query, with_locales:, with_products_count: false)
+      query = query.gsub("#LOCALES_SUBQUERY#", with_locales ? LOCALES_SUBQUERY : "")
+      query.gsub("#PRODUCTS_COUNT_SUBQUERY#", with_products_count ? PRODUCTS_COUNT_SUBQUERY : "")
     end
 
-    def parse_data(response, with_locales: false)
+    def parse_data(response, with_locales: false, with_products_count: false)
       data = response.data
       plan_display_name = ShopifyGraphql.normalize_plan_display_name(data.shop.plan.displayName)
       plan_name = ShopifyGraphql::DISPLAY_NAME_TO_PLAN[plan_display_name]
@@ -111,8 +126,8 @@ module ShopifyGraphql
         plan_name: plan_name,
         plan_display_name: plan_display_name,
         plan_public_display_name: data.shop.plan.publicDisplayName,
-        shopify_plus: data.shop.plan.shopifyPlus,
-        partner_development: data.shop.plan.partnerDevelopment,
+        plan_shopify_plus: data.shop.plan.shopifyPlus,
+        plan_partner_development: data.shop.plan.partnerDevelopment,
         money_format: data.shop.currencyFormats.moneyFormat,
         money_in_emails_format: data.shop.currencyFormats.moneyInEmailsFormat,
         money_with_currency_format: data.shop.currencyFormats.moneyWithCurrencyFormat,
@@ -128,6 +143,9 @@ module ShopifyGraphql
         max_product_options: data.shop.resourceLimits.maxProductOptions,
         max_product_variants: data.shop.resourceLimits.maxProductVariants,
         unified_markets: true,
+        app_installation_id: data.currentAppInstallation&.id,
+        password_enabled: !!data.onlineStore&.passwordProtection&.enabled,
+        products_count: with_products_count ? data.productsCount&.count : nil,
         graphql_points_limit: response.points_limit
       )
       if with_locales
