@@ -7,7 +7,7 @@ module ShopifyGraphql
     private
 
     def args_info(job)
-      log_disabled_classes = %[
+      log_disabled_classes = %w[
         ShopifyGraphql::CreateWebhooksJob
         ShopifyGraphql::DestroyWebhooksJob
         ShopifyGraphql::UpdateWebhooksJob
