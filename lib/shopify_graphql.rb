@@ -1,3 +1,5 @@
+# OpenStruct holds parsed GraphQL responses; shopify_api uses it without requiring it
+require 'ostruct'
 require 'shopify_api'
 require 'active_support'
 

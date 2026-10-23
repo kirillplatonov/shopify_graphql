@@ -27,4 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activesupport", ">= 6.1.0"
   spec.add_dependency "shopify_api", ">= 13.4"
   spec.add_dependency "shopify_app", ">= 19.0"
+  spec.add_dependency "ostruct"
 end
