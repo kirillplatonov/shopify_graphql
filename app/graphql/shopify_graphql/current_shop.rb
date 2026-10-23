@@ -13,14 +13,15 @@ module ShopifyGraphql
           primaryDomain {
             host
           }
-          #CREATED_AT#
-          #UPDATED_AT#
-          #SHOP_OWNER_NAME#
+          createdAt
+          updatedAt
+          shopOwnerName
           currencyCode
-          billingAddress {
+          shopAddress {
             country
             countryCodeV2
             province
+            provinceCode
             city
             address1
             address2
@@ -33,6 +34,9 @@ module ShopifyGraphql
           ianaTimezone
           plan {
             displayName
+            publicDisplayName
+            shopifyPlus
+            partnerDevelopment
           }
           currencyFormats {
             moneyFormat
@@ -47,12 +51,11 @@ module ShopifyGraphql
           checkoutApiSupported
           transactionalSmsDisabled
           enabledPresentmentCurrencies
-          #SMS_CONSENT#
+          marketingSmsConsentEnabledAtCheckout
           resourceLimits {
             maxProductOptions
             maxProductVariants
           }
-          #FEATURES#
         }
         #LOCALES_SUBQUERY#
       }
@@ -61,11 +64,6 @@ module ShopifyGraphql
       shopLocales {
         locale
         primary
-      }
-    GRAPHQL
-    FEATURES_SUBQUERY = <<~GRAPHQL
-      features {
-        unifiedMarkets
       }
     GRAPHQL
 
@@ -78,27 +76,7 @@ module ShopifyGraphql
     private
 
     def prepare_query(query, with_locales:)
-      query = query.gsub("#LOCALES_SUBQUERY#", with_locales ? LOCALES_SUBQUERY : "")
-      if ShopifyAPI::Context.api_version.in?(%w[2024-01 2024-04 2024-07])
-        query.gsub!("#SHOP_OWNER_NAME#", "")
-      else
-        query.gsub!("#SHOP_OWNER_NAME#", "shopOwnerName")
-      end
-      if ShopifyAPI::Context.api_version.in?(%w[2024-01])
-        query.gsub!("#CREATED_AT#", "")
-        query.gsub!("#UPDATED_AT#", "")
-        query.gsub!("#SMS_CONSENT#", "")
-      else
-        query.gsub!("#CREATED_AT#", "createdAt")
-        query.gsub!("#UPDATED_AT#", "updatedAt")
-        query.gsub!("#SMS_CONSENT#", "marketingSmsConsentEnabledAtCheckout")
-      end
-      if ShopifyAPI::Context.api_version.in?(%w[2024-01 2024-04 2024-07 2024-10 2025-01])
-        query.gsub!("#FEATURES#", "")
-      else
-        query.gsub!("#FEATURES#", FEATURES_SUBQUERY)
-      end
-      query
+      query.gsub("#LOCALES_SUBQUERY#", with_locales ? LOCALES_SUBQUERY : "")
     end
 
     def parse_data(response, with_locales: false)
@@ -116,22 +94,25 @@ module ShopifyGraphql
         updated_at: data.shop.updatedAt,
         shop_owner: data.shop.shopOwnerName,
         currency: data.shop.currencyCode,
-        country_name: data.shop.billingAddress.country,
-        country: data.shop.billingAddress.countryCodeV2,
-        country_code: data.shop.billingAddress.countryCodeV2,
-        province: data.shop.billingAddress.province,
-        province_code: data.shop.billingAddress.provinceCode,
-        city: data.shop.billingAddress.city,
-        address1: data.shop.billingAddress.address1,
-        address2: data.shop.billingAddress.address2,
-        zip: data.shop.billingAddress.zip,
-        latitude: data.shop.billingAddress.latitude,
-        longitude: data.shop.billingAddress.longitude,
-        phone: data.shop.billingAddress.phone,
+        country_name: data.shop.shopAddress.country,
+        country: data.shop.shopAddress.countryCodeV2,
+        country_code: data.shop.shopAddress.countryCodeV2,
+        province: data.shop.shopAddress.province,
+        province_code: data.shop.shopAddress.provinceCode,
+        city: data.shop.shopAddress.city,
+        address1: data.shop.shopAddress.address1,
+        address2: data.shop.shopAddress.address2,
+        zip: data.shop.shopAddress.zip,
+        latitude: data.shop.shopAddress.latitude,
+        longitude: data.shop.shopAddress.longitude,
+        phone: data.shop.shopAddress.phone,
         timezone: data.shop.timezoneAbbreviation,
         iana_timezone: data.shop.ianaTimezone,
         plan_name: plan_name,
         plan_display_name: plan_display_name,
+        plan_public_display_name: data.shop.plan.publicDisplayName,
+        shopify_plus: data.shop.plan.shopifyPlus,
+        partner_development: data.shop.plan.partnerDevelopment,
         money_format: data.shop.currencyFormats.moneyFormat,
         money_in_emails_format: data.shop.currencyFormats.moneyInEmailsFormat,
         money_with_currency_format: data.shop.currencyFormats.moneyWithCurrencyFormat,
@@ -146,7 +127,7 @@ module ShopifyGraphql
         marketing_sms_consent_enabled_at_checkout: data.shop.marketingSmsConsentEnabledAtCheckout,
         max_product_options: data.shop.resourceLimits.maxProductOptions,
         max_product_variants: data.shop.resourceLimits.maxProductVariants,
-        unified_markets: !!data.shop&.features&.unifiedMarkets,
+        unified_markets: true,
         graphql_points_limit: response.points_limit
       )
       if with_locales
