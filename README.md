@@ -15,7 +15,7 @@ Less painful way to work with [Shopify Graphql API](https://shopify.dev/api/admi
 
 ## Dependencies
 
-- [`shopify_api`](https://github.com/Shopify/shopify-api-ruby) v10+
+- [`shopify_api`](https://github.com/Shopify/shopify-api-ruby) v13.4+
 - [`shopify_app`](https://github.com/Shopify/shopify_app) v19+
 
 > For `shopify_api` < v10 use [`0-4-stable`](https://github.com/kirillplatonov/shopify_graphql/tree/0-4-stable) branch.
