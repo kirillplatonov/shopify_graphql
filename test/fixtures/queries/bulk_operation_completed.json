@@ -1,0 +1,29 @@
+{
+  "data": {
+    "node": {
+      "id": "gid://shopify/BulkOperation/720918",
+      "type": "QUERY",
+      "status": "COMPLETED",
+      "errorCode": null,
+      "createdAt": "2026-10-20T10:00:00Z",
+      "completedAt": "2026-10-20T10:02:15Z",
+      "fileSize": "4563987",
+      "url": "https://storage.googleapis.com/shopify-tiers-assets-prod-us-east1/bulk-operation-outputs/720918-final.jsonl",
+      "partialDataUrl": null,
+      "objectCount": "1500",
+      "rootObjectCount": "500",
+      "query": "{ products { edges { node { id variants { edges { node { id } } } } } } }"
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 1,
+      "actualQueryCost": 1,
+      "throttleStatus": {
+        "maximumAvailable": 2000,
+        "currentlyAvailable": 1999,
+        "restoreRate": 100
+      }
+    }
+  }
+}

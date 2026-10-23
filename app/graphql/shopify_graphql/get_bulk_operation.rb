@@ -7,14 +7,17 @@ module ShopifyGraphql
         node(id: $id) {
           ... on BulkOperation {
             id
+            type
             status
             errorCode
             createdAt
             completedAt
             fileSize
             url
+            partialDataUrl
             objectCount
             rootObjectCount
+            query
           }
         }
       }
@@ -35,13 +38,17 @@ module ShopifyGraphql
 
       OpenStruct.new(
         id: data.id,
+        type: data.type,
         status: data.status,
         error_code: data.errorCode,
         created_at: Time.find_zone("UTC").parse(data.createdAt),
         completed_at: data.completedAt ? Time.find_zone("UTC").parse(data.completedAt) : nil,
+        file_size: data.fileSize ? data.fileSize.to_i : nil,
         url: data.url,
+        partial_data_url: data.partialDataUrl,
         object_count: data.objectCount.to_i,
         root_object_count: data.rootObjectCount.to_i,
+        query: data.query,
       )
     end
   end

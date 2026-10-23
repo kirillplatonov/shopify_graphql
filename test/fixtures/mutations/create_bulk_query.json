@@ -1,0 +1,22 @@
+{
+  "data": {
+    "bulkOperationRunQuery": {
+      "bulkOperation": {
+        "id": "gid://shopify/BulkOperation/720918",
+        "status": "CREATED"
+      },
+      "userErrors": []
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 10,
+      "actualQueryCost": 10,
+      "throttleStatus": {
+        "maximumAvailable": 2000,
+        "currentlyAvailable": 1990,
+        "restoreRate": 100
+      }
+    }
+  }
+}
