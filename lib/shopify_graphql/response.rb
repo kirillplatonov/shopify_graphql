@@ -27,6 +27,8 @@ module ShopifyGraphql
     end
 
     def points_maxed?(threshold: 0)
+      return false if points_left.nil?
+
       points_left < threshold
     end
   end
