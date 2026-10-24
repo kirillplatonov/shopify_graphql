@@ -93,7 +93,7 @@ class CurrentShopTest < ActiveSupport::TestCase
 
     shop = ShopifyGraphql::CurrentShop.call(with_products_count: true)
 
-    assert_includes query, "productsCount"
+    assert_includes query, "productsCount(limit: null)"
     assert_requested :post, API_PATH, body: { query: query, variables: {} }
     assert_equal 42, shop.products_count
   end

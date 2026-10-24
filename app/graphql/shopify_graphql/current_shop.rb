@@ -76,7 +76,7 @@ module ShopifyGraphql
       }
     GRAPHQL
     PRODUCTS_COUNT_SUBQUERY = <<~GRAPHQL
-      productsCount {
+      productsCount(limit: null) {
         count
       }
     GRAPHQL
