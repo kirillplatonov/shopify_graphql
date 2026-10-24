@@ -13,10 +13,11 @@
       "updatedAt": "2024-10-16T09:02:20Z",
       "shopOwnerName": "Example User",
       "currencyCode": "USD",
-      "billingAddress": {
+      "shopAddress": {
         "country": "United States",
         "countryCodeV2": "US",
-        "province": null,
+        "province": "New York",
+        "provinceCode": "NY",
         "city": null,
         "address1": null,
         "address2": "",
@@ -28,7 +29,10 @@
       "timezoneAbbreviation": "EDT",
       "ianaTimezone": "America/New_York",
       "plan": {
-        "displayName": "Developer Preview"
+        "displayName": "Developer Preview",
+        "publicDisplayName": "Developer Preview",
+        "shopifyPlus": false,
+        "partnerDevelopment": true
       },
       "taxesIncluded": false,
       "currencyFormats": {
@@ -58,6 +62,17 @@
         "maxProductOptions": 3,
         "maxProductVariants": 100
       }
+    },
+    "currentAppInstallation": {
+      "id": "gid://shopify/AppInstallation/456"
+    },
+    "onlineStore": {
+      "passwordProtection": {
+        "enabled": true
+      }
+    },
+    "productsCount": {
+      "count": 42
     },
     "shopLocales": [
       {

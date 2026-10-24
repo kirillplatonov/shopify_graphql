@@ -755,6 +755,13 @@ ShopifyGraphql.handle_user_errors(response)
   puts shop.shop_locales
   ```
 
+  Or with products count (requires `read_products` scope):
+
+  ```rb
+  shop = ShopifyGraphql::CurrentShop.call(with_products_count: true)
+  puts shop.products_count
+  ```
+
 - `ShopifyGraphql::CancelSubscription`
 - `ShopifyGraphql::CreateRecurringSubscription`
 - `ShopifyGraphql::CreateUsageSubscription`
