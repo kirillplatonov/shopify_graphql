@@ -783,6 +783,7 @@ The gem exposes Graphql rate limit extensions in response object:
 - `points_limit`
 - `points_restore_rate`
 - `query_cost`
+- `requested_query_cost`
 
 And adds a helper to check if available points lower than threshold (useful for implementing API backoff):
 
@@ -797,6 +798,44 @@ response.points_limit # => 2000.0
 response.points_restore_rate # => 100.0
 response.query_cost # => 1
 response.points_maxed?(threshold: 100) # => false
+```
+
+## Error handling
+
+Failed calls raise `ShopifyGraphql::ConnectionError` or one of its subclasses: `TooManyRequests` (`THROTTLED`), `ServerError`, `ShopPendingTermination`, HTTP errors like `BadRequest` or `ResourceNotFound`, and `UserError` from `handle_user_errors`.
+
+Errors raised from a GraphQL response carry its partial `data`, all of its `errors`, and the same cost readers as the response (`query_cost`, `requested_query_cost`, `points_left`, `points_limit`, `points_restore_rate`). They return `nil` when the information isn't available, e.g. for HTTP and network errors.
+
+```rb
+begin
+  response = GetProduct.call(id: "gid://shopify/Product/PRODUCT_GID")
+rescue ShopifyGraphql::TooManyRequests => error
+  # Throttled queries don't run, so there's no query_cost; use the requested cost
+  sleep((error.requested_query_cost - error.points_left) / error.points_restore_rate)
+  retry
+rescue ShopifyGraphql::ConnectionError => error
+  error.data   # => partial data, e.g. when a field returns ACCESS_DENIED
+  error.errors # => all GraphQL errors
+  raise
+end
+```
+
+`UserError` carries the mutation payload as `data`, its `userErrors` as `errors`, and the cost of the mutation:
+
+```rb
+begin
+  UpdateProduct.call(input: { id: "gid://shopify/Product/123", title: "" })
+rescue ShopifyGraphql::UserError => error
+  error.query_cost            # => 10
+  error.errors.map(&:message) # => ["Title can't be blank"]
+end
+```
+
+Wrappers that include `ShopifyGraphql::Query` or `ShopifyGraphql::Mutation` attach the cost automatically. `ShopifyGraphql.execute` and `ShopifyGraphql.handle_user_errors` use a new client on each call, so pass the response explicitly:
+
+```rb
+response = ShopifyGraphql.execute(PRODUCT_UPDATE_MUTATION, input: input)
+ShopifyGraphql.handle_user_errors(response.data.productUpdate, response: response)
 ```
 
 ## Custom apps

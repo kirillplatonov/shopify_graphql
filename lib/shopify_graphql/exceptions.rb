@@ -1,6 +1,31 @@
 module ShopifyGraphql
   class ConnectionError < ShopifyAPI::Errors::HttpResponseError
     attr_accessor :error_code, :error_codes, :fields, :messages
+    # Partial data and errors from the GraphQL response. For UserError, data is the
+    # mutation payload and errors are its userErrors.
+    attr_accessor :data, :errors
+    # ShopifyGraphql::Response the error came from, used for cost information
+    attr_accessor :graphql_response
+
+    def query_cost
+      graphql_response&.query_cost
+    end
+
+    def requested_query_cost
+      graphql_response&.requested_query_cost
+    end
+
+    def points_left
+      graphql_response&.points_left
+    end
+
+    def points_limit
+      graphql_response&.points_limit
+    end
+
+    def points_restore_rate
+      graphql_response&.points_restore_rate
+    end
 
     def initialize(response: nil)
       unless response

@@ -26,6 +26,10 @@ module ShopifyGraphql
       extensions&.cost&.actualQueryCost
     end
 
+    def requested_query_cost
+      extensions&.cost&.requestedQueryCost
+    end
+
     def points_maxed?(threshold: 0)
       return false if points_left.nil?
 
