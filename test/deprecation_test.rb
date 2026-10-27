@@ -29,6 +29,27 @@ class DeprecationTest < ActiveSupport::TestCase
     assert_includes warnings.first, __FILE__
   end
 
+  test "callstack falls back to all frames when none are outside the gem" do
+    frame = Struct.new(:absolute_path)
+    gem_frame = frame.new(File.expand_path("../lib/shopify_graphql/client.rb", __dir__))
+    app_frame = frame.new(__FILE__)
+
+    assert_equal [app_frame], ShopifyGraphql::Deprecation.send(:app_callstack, [gem_frame, app_frame])
+    assert_equal [gem_frame], ShopifyGraphql::Deprecation.send(:app_callstack, [gem_frame])
+  end
+
+  test "deprecator configured to raise raises on every call" do
+    deprecator = ShopifyGraphql.deprecator
+    old_behavior = deprecator.behavior
+    deprecator.behavior = :raise
+
+    2.times do
+      assert_raises(ActiveSupport::DeprecationException) { ShopifyGraphql.normalize_plan_display_name("Basic") }
+    end
+  ensure
+    deprecator.behavior = old_behavior
+  end
+
   test "UpsertPrivateMetafield" do
     variables = { input: { namespace: "NAMESPACE", key: "KEY", valueInput: { value: "VALUE", valueType: "STRING" } } }
     fake("mutations/upsert_private_method_shop.json", ShopifyGraphql::UpsertPrivateMetafield::MUTATION, **variables)

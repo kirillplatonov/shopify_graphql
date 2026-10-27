@@ -18,8 +18,14 @@ module ShopifyGraphql
     class << self
       def warn_once(key, message)
         return unless @mutex.synchronize { @warned.add?(key) }
-        callstack = caller_locations.drop_while { |frame| frame.absolute_path.to_s.start_with?(*GEM_PATHS) }
-        ShopifyGraphql.deprecator.warn(message, callstack)
+
+        begin
+          ShopifyGraphql.deprecator.warn(message, app_callstack(caller_locations))
+        rescue Exception
+          # A deprecator configured to raise should raise on every call, not only the first
+          @mutex.synchronize { @warned.delete(key) }
+          raise
+        end
       end
 
       def warn_webhooks_once(api)
@@ -30,6 +36,14 @@ module ShopifyGraphql
       # Used by tests to see warnings again
       def reset
         @mutex.synchronize { @warned.clear }
+      end
+
+      private
+
+      # Rails < 7.1 raises NoMethodError on an empty callstack
+      def app_callstack(callstack)
+        app_frames = callstack.drop_while { |frame| frame.absolute_path.to_s.start_with?(*GEM_PATHS) }
+        app_frames.empty? ? callstack : app_frames
       end
     end
   end
