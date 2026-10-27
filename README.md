@@ -887,6 +887,8 @@ class SyncProductsJob < ApplicationJob
 end
 ```
 
+Shopify also returns 401 for an expired access token. If you use expiring offline access tokens, a 401 can mean the token wasn't refreshed, so refresh it before treating the shop as uninstalled.
+
 `ForbiddenAccess`, `NonExpiringTokenRejected` and `ResourceNotFound` aren't included, so handle them separately. A 403 means the shop was marked as fraudulent or, from January 1, 2027, that the app sent a non-expiring access token, which would affect every shop at once. A 404 is also raised for null nodes.
 
 ## Custom apps

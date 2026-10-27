@@ -60,7 +60,10 @@ module ShopifyGraphql
   #   discard_on ShopifyGraphql::ShopUnavailable
   #
   # Members:
-  # - UnauthorizedAccess (401): app uninstalled or access token revoked
+  # - UnauthorizedAccess (401): app uninstalled or access token revoked. Shopify
+  #   also returns 401 for an expired access token, so with expiring offline
+  #   tokens a 401 can mean the token wasn't refreshed. Refresh it before
+  #   treating the shop as gone.
   # - PaymentRequired (402): shop is frozen
   # - ShopLocked (423): shop is locked
   # - ShopPendingTermination (SHOP_PENDING_TERMINATION): shop is under review
