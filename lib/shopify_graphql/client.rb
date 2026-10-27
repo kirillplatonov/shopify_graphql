@@ -127,7 +127,7 @@ module ShopifyGraphql
         end
         exception = ConnectionError.new(response: response)
         exception.messages = [ message ]
-        attach_graphql_response(exception, parsed_body)
+        attach_graphql_response(exception, parsed_body, errors: [ OpenStruct.new(message: message) ])
         raise exception, generate_error_message(message: message)
       end
 
@@ -156,9 +156,9 @@ module ShopifyGraphql
       raise exception, error_message
     end
 
-    def attach_graphql_response(exception, parsed_body)
+    def attach_graphql_response(exception, parsed_body, errors: parsed_body.errors)
       exception.data = parsed_body.data
-      exception.errors = parsed_body.errors
+      exception.errors = errors
       exception.graphql_response = Response.new(parsed_body)
     end
 

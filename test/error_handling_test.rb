@@ -216,7 +216,7 @@ class ErrorHandlingTest < ActiveSupport::TestCase
     assert_equal 200, error.code
     assert_includes error.message, "Something went wrong"
     assert_equal ["Something went wrong"], error.messages
-    assert_equal "Something went wrong", error.errors
+    assert_equal ["Something went wrong"], error.errors.map(&:message)
     assert_nil error.data
     assert_no_cost error
   end
@@ -231,6 +231,7 @@ class ErrorHandlingTest < ActiveSupport::TestCase
     assert_equal 200, error.code
     assert_equal "Failed. Response message = query: Required parameter missing or invalid.", error.message
     assert_equal ["query: Required parameter missing or invalid"], error.messages
+    assert_equal ["query: Required parameter missing or invalid"], error.errors.map(&:message)
   end
 
   test "throttled error exposes cost" do
@@ -350,7 +351,7 @@ class ErrorHandlingTest < ActiveSupport::TestCase
       ShopifyGraphql.execute(SIMPLE_QUERY)
     end
     assert_nil error.data
-    assert_nil error.errors
+    assert_equal [], error.errors
     assert_nil error.graphql_response
     assert_no_cost error
   end
@@ -362,7 +363,7 @@ class ErrorHandlingTest < ActiveSupport::TestCase
       ShopifyGraphql.execute(SIMPLE_QUERY)
     end
     assert_nil error.data
-    assert_nil error.errors
+    assert_equal [], error.errors
     assert_nil error.graphql_response
     assert_no_cost error
   end
@@ -371,7 +372,7 @@ class ErrorHandlingTest < ActiveSupport::TestCase
     error = ShopifyGraphql::ResourceNotFound.new
 
     assert_nil error.data
-    assert_nil error.errors
+    assert_equal [], error.errors
     assert_nil error.graphql_response
     assert_no_cost error
   end

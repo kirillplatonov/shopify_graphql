@@ -804,14 +804,23 @@ response.points_maxed?(threshold: 100) # => false
 
 Failed calls raise `ShopifyGraphql::ConnectionError` or one of its subclasses: `TooManyRequests` (`THROTTLED`), `ServerError`, `ShopPendingTermination`, HTTP errors like `BadRequest` or `ResourceNotFound`, and `UserError` from `handle_user_errors`.
 
-Errors raised from a GraphQL response carry its partial `data`, all of its `errors`, and the same cost readers as the response (`query_cost`, `requested_query_cost`, `points_left`, `points_limit`, `points_restore_rate`). They return `nil` when the information isn't available, e.g. for HTTP and network errors.
+Errors raised from a GraphQL response carry its partial `data`, all of its `errors`, and the same cost readers as the response (`query_cost`, `requested_query_cost`, `points_left`, `points_limit`, `points_restore_rate`). `errors` is always an Array, empty when there are none. `data` and the cost readers return `nil` when the information isn't available, e.g. for HTTP and network errors.
 
 ```rb
+retries = 0
 begin
   response = GetProduct.call(id: "gid://shopify/Product/PRODUCT_GID")
 rescue ShopifyGraphql::TooManyRequests => error
-  # Throttled queries don't run, so there's no query_cost; use the requested cost
-  sleep((error.requested_query_cost - error.points_left) / error.points_restore_rate)
+  retries += 1
+  raise if retries > 3
+
+  # Throttled queries don't run, so there's no query_cost. Wait until the requested
+  # cost is restored, or 1 second if the response has no cost data.
+  wait = 1.0
+  if error.requested_query_cost && error.points_left && error.points_restore_rate
+    wait = (error.requested_query_cost - error.points_left) / error.points_restore_rate.to_f
+  end
+  sleep(wait.clamp(1, 60))
   retry
 rescue ShopifyGraphql::ConnectionError => error
   error.data   # => partial data, e.g. when a field returns ACCESS_DENIED
