@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    shopify_graphql (2.5.2)
+    shopify_graphql (2.6.0)
       activesupport (>= 6.1.0)
       ostruct
       rails (>= 6.1.0)
