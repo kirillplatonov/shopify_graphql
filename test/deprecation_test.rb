@@ -105,6 +105,22 @@ class DeprecationTest < ActiveSupport::TestCase
     end
   end
 
+  test "WebhookVerification logs instead of failing the request when the deprecator raises" do
+    deprecator = ShopifyGraphql.deprecator
+    old_behavior = deprecator.behavior
+    deprecator.behavior = :raise
+    log = StringIO.new
+    controller = ShopifyGraphql::GraphqlWebhooksController.new
+    controller.logger = ActiveSupport::Logger.new(log)
+
+    2.times do
+      assert_nothing_raised { controller.send(:deprecate_webhooks) }
+    end
+    assert_equal 2, log.string.scan("ShopifyGraphql::WebhookVerification is part of ShopifyGraphql webhooks").size
+  ensure
+    deprecator.behavior = old_behavior
+  end
+
   test "Configuration#webhooks=" do
     config = ShopifyGraphql::Configuration.new
     webhooks = [{ topic: "SHOP_UPDATE", address: "https://example.com/graphql_webhooks/shop_update" }]
