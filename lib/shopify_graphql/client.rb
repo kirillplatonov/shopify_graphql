@@ -50,10 +50,11 @@ module ShopifyGraphql
     end
 
     def execute(query, headers: nil, **variables)
+      @last_response = nil
       response = client.query(query: query, variables: variables, headers: headers)
-      Response.new(handle_response(response))
+      @last_response = Response.new(handle_response(response))
     rescue ShopifyAPI::Errors::HttpResponseError => e
-      Response.new(handle_response(e.response, e))
+      @last_response = Response.new(handle_response(e.response, e))
     rescue JSON::ParserError => e
       raise ServerError.new(response: response), "Invalid JSON response: #{e.message}"
     rescue *NETWORK_ERRORS => e
@@ -126,6 +127,7 @@ module ShopifyGraphql
         end
         exception = ConnectionError.new(response: response)
         exception.messages = [ message ]
+        attach_graphql_response(exception, parsed_body, errors: [ OpenStruct.new(message: message) ])
         raise exception, generate_error_message(message: message)
       end
 
@@ -150,25 +152,37 @@ module ShopifyGraphql
       exception.error_code = error_code
       exception.error_codes = [ error_code ]
       exception.messages = [ error.message ]
+      attach_graphql_response(exception, parsed_body)
       raise exception, error_message
     end
 
-    def handle_user_errors(response)
-      return response if response.userErrors.blank?
+    def attach_graphql_response(exception, parsed_body, errors: parsed_body.errors)
+      exception.data = parsed_body.data
+      exception.errors = errors
+      exception.graphql_response = Response.new(parsed_body)
+    end
 
-      error = response.userErrors.first
-      errors = response.userErrors
+    # Pass the Response from execute as response: to attach its cost to UserError.
+    # Without it, the last Response returned by execute on this client is used.
+    def handle_user_errors(payload, response: nil)
+      return payload if payload.userErrors.blank?
+
+      error = payload.userErrors.first
+      errors = payload.userErrors
       error_message = generate_user_errors_message(
         messages: errors.map(&:message),
         codes: errors.map(&:code),
         fields: errors.map(&:field),
       )
 
-      exception = UserError.new(response: response)
+      exception = UserError.new(response: payload)
       exception.error_code = error.code
       exception.error_codes = errors.map(&:code)
       exception.fields = errors.map(&:field)
       exception.messages = errors.map(&:message)
+      exception.data = payload
+      exception.errors = errors
+      exception.graphql_response = response || @last_response
       raise exception, error_message
     end
 
