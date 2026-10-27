@@ -2,6 +2,7 @@ module ShopifyGraphql
   class WebhooksManager
     class << self
       def queue_create(shop_domain, shop_token)
+        ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::WebhooksManager.queue_create")
         ShopifyGraphql::CreateWebhooksJob.perform_later(
           shop_domain: shop_domain,
           shop_token: shop_token,
@@ -9,6 +10,7 @@ module ShopifyGraphql
       end
 
       def queue_destroy(shop_domain, shop_token)
+        ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::WebhooksManager.queue_destroy")
         ShopifyGraphql::DestroyWebhooksJob.perform_later(
           shop_domain: shop_domain,
           shop_token: shop_token,
@@ -16,6 +18,7 @@ module ShopifyGraphql
       end
 
       def queue_update(shop_domain, shop_token)
+        ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::WebhooksManager.queue_update")
         ShopifyGraphql::UpdateWebhooksJob.perform_later(
           shop_domain: shop_domain,
           shop_token: shop_token,
@@ -26,6 +29,7 @@ module ShopifyGraphql
     attr_reader :required_webhooks
 
     def initialize(webhooks)
+      ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::WebhooksManager")
       @required_webhooks = webhooks
     end
 

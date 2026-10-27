@@ -14,10 +14,12 @@ class DeletePrivateMetafieldTest < ActiveSupport::TestCase
       **variables
     )
 
-    response = ShopifyGraphql::DeletePrivateMetafield.call(
-      namespace: "NAMESPACE",
-      key: "KEY"
-    ).data
+    response = assert_deprecated("ShopifyGraphql::DeletePrivateMetafield is deprecated", ShopifyGraphql.deprecator) do
+      ShopifyGraphql::DeletePrivateMetafield.call(
+        namespace: "NAMESPACE",
+        key: "KEY"
+      )
+    end.data
 
     assert_not_nil response.deleted_private_metafield_id
   end
@@ -36,11 +38,13 @@ class DeletePrivateMetafieldTest < ActiveSupport::TestCase
       **variables
     )
 
-    response = ShopifyGraphql::DeletePrivateMetafield.call(
-      owner: "gid://shopify/Product/6633850863839",
-      namespace: "NAMESPACE",
-      key: "KEY"
-    ).data
+    response = assert_deprecated("ShopifyGraphql::DeletePrivateMetafield is deprecated", ShopifyGraphql.deprecator) do
+      ShopifyGraphql::DeletePrivateMetafield.call(
+        owner: "gid://shopify/Product/6633850863839",
+        namespace: "NAMESPACE",
+        key: "KEY"
+      )
+    end.data
 
     assert_not_nil response.deleted_private_metafield_id
   end

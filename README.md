@@ -1,6 +1,6 @@
 # Shopify Graphql
 
-Less painful way to work with [Shopify Graphql API](https://shopify.dev/api/admin-graphql) in Ruby. This library is a tiny wrapper on top of [`shopify_api`](https://github.com/Shopify/shopify-api-ruby) gem. It provides a simple API for Graphql calls, better error handling, and Graphql webhooks integration.
+Less painful way to work with [Shopify Graphql API](https://shopify.dev/api/admin-graphql) in Ruby. This library is a tiny wrapper on top of [`shopify_api`](https://github.com/Shopify/shopify-api-ruby) gem. It provides a simple API for Graphql calls, better error handling, and Graphql webhooks integration (deprecated).
 
 ## Features
 
@@ -9,7 +9,7 @@ Less painful way to work with [Shopify Graphql API](https://shopify.dev/api/admi
 - ActiveResource-like error handling
 - Graphql and user error handlers
 - Auto-conversion of responses to OpenStruct
-- Graphql webhooks integration for Rails
+- Graphql webhooks integration for Rails (deprecated, see [Graphql webhooks](#graphql-webhooks-deprecated))
 - Wrappers for Graphql rate limit extensions
 - Built-in calls for common Graphql calls
 
@@ -762,12 +762,14 @@ ShopifyGraphql.handle_user_errors(response)
   puts shop.products_count
   ```
 
+  `plan_name` and `plan_display_name` are deprecated and will be removed in v3.0. They're derived from the deprecated `plan.displayName` field. Use `plan_public_display_name`, `plan_shopify_plus` and `plan_partner_development` instead.
+
 - `ShopifyGraphql::CancelSubscription`
 - `ShopifyGraphql::CreateRecurringSubscription`
 - `ShopifyGraphql::CreateUsageSubscription`
 - `ShopifyGraphql::GetAppSubscription`
-- `ShopifyGraphql::UpsertPrivateMetafield`
-- `ShopifyGraphql::DeletePrivateMetafield`
+- `ShopifyGraphql::UpsertPrivateMetafield` (deprecated, see [Deprecated in 2.6](#deprecated-in-26-removed-in-30))
+- `ShopifyGraphql::DeletePrivateMetafield` (deprecated, see [Deprecated in 2.6](#deprecated-in-26-removed-in-30))
 - `ShopifyGraphql::CreateBulkMutation`
 - `ShopifyGraphql::CreateBulkQuery`
 - `ShopifyGraphql::CreateStagedUploads`
@@ -910,10 +912,22 @@ Shop.with_shopify_session do
 end
 ```
 
+## Deprecated in 2.6, removed in 3.0
+
+These APIs warn through `ShopifyGraphql.deprecator`, once per process for each API. On Rails 7.1+ it's registered as `Rails.application.deprecators[:shopify_graphql]`, so your `config.active_support.deprecation` settings apply to it.
+
+| Deprecated | Use instead |
+| --- | --- |
+| `ShopifyGraphql::UpsertPrivateMetafield`, `ShopifyGraphql::DeletePrivateMetafield` | App-owned metafields: `metafieldsSet` and `metafieldsDelete` with an `$app` namespace. Shopify has removed `privateMetafieldUpsert` and `privateMetafieldDelete` from the Admin API. |
+| [Graphql webhooks](#graphql-webhooks-deprecated): `ShopifyGraphql::WebhooksManager`, `ShopifyGraphql::Webhook`, `CreateWebhooksJob`, `DestroyWebhooksJob`, `UpdateWebhooksJob`, `WebhookVerification`, the `graphql_webhooks` route and the `config.webhook*` options | `shopify_app` [webhooks](https://github.com/Shopify/shopify_app/blob/main/docs/shopify_app/webhooks.md) or app-specific subscriptions in `shopify.app.toml` |
+| `ShopifyGraphql::Resource`, `ShopifyGraphql::Shop.current` | `ShopifyGraphql::CurrentShop`, or your own classes that include `ShopifyGraphql::Query` or `ShopifyGraphql::Mutation` |
+| `ShopifyGraphql::PLAN_TO_DISPLAY_NAME`, `ShopifyGraphql::DISPLAY_NAME_TO_PLAN`, `ShopifyGraphql.normalize_plan_display_name` | `plan_public_display_name`, `plan_shopify_plus` and `plan_partner_development` from `ShopifyGraphql::CurrentShop` |
+| `plan_name` and `plan_display_name` from `ShopifyGraphql::CurrentShop` (no runtime warning) | `plan_public_display_name`, `plan_shopify_plus` and `plan_partner_development` |
+
 ## Graphql webhooks (deprecated)
 
 > [!WARNING]
-> ShopifyGraphql webhooks are deprecated and will be removed in v3.0. Please use `shopify_app` gem for handling webhooks. See [`shopify_app` documentation](https://github.com/Shopify/shopify_app/blob/main/docs/shopify_app/webhooks.md) for more details.
+> ShopifyGraphql webhooks are deprecated and will be removed in v3.0. Please use `shopify_app` gem for handling webhooks or declare app-specific subscriptions in `shopify.app.toml`. See [`shopify_app` documentation](https://github.com/Shopify/shopify_app/blob/main/docs/shopify_app/webhooks.md) for more details.
 
 The gem has built-in support for Graphql webhooks (similar to `shopify_app`). To enable it add the following config to `config/initializers/shopify_app.rb`:
 

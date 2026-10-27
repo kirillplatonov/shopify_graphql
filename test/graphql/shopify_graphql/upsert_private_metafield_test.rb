@@ -22,11 +22,13 @@ class UpsertPrivateMetafieldTest < ActiveSupport::TestCase
       **variables
     )
 
-    response = ShopifyGraphql::UpsertPrivateMetafield.call(
-      namespace: "NAMESPACE",
-      key: "KEY",
-      value: @value
-    ).data
+    response = assert_deprecated("ShopifyGraphql::UpsertPrivateMetafield is deprecated", ShopifyGraphql.deprecator) do
+      ShopifyGraphql::UpsertPrivateMetafield.call(
+        namespace: "NAMESPACE",
+        key: "KEY",
+        value: @value
+      )
+    end.data
 
     assert_equal "NAMESPACE", response.namespace
     assert_equal "KEY", response.key
@@ -52,12 +54,14 @@ class UpsertPrivateMetafieldTest < ActiveSupport::TestCase
       **variables
     )
 
-    response = ShopifyGraphql::UpsertPrivateMetafield.call(
-      owner: "gid://shopify/Product/6633850863839",
-      namespace: "NAMESPACE",
-      key: "KEY",
-      value: @value
-    ).data
+    response = assert_deprecated("ShopifyGraphql::UpsertPrivateMetafield is deprecated", ShopifyGraphql.deprecator) do
+      ShopifyGraphql::UpsertPrivateMetafield.call(
+        owner: "gid://shopify/Product/6633850863839",
+        namespace: "NAMESPACE",
+        key: "KEY",
+        value: @value
+      )
+    end.data
 
     assert_equal "NAMESPACE", response.namespace
     assert_equal "KEY", response.key

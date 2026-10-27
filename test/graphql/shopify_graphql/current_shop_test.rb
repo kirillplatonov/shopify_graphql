@@ -29,7 +29,7 @@ class CurrentShopTest < ActiveSupport::TestCase
     query = ShopifyGraphql::CurrentShop.new.send(:prepare_query, ShopifyGraphql::CurrentShop::QUERY, with_locales: false)
     fake("queries/current_shop.json", query)
 
-    shop = ShopifyGraphql::CurrentShop.call
+    shop = assert_not_deprecated(ShopifyGraphql.deprecator) { ShopifyGraphql::CurrentShop.call }
 
     assert_equal "developer_preview", shop.plan_display_name # normalized
     assert_equal "partner_test", shop.plan_name # mapped fallback

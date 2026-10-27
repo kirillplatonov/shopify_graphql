@@ -1,9 +1,14 @@
 module ShopifyGraphql
   class Configuration
-    attr_accessor :webhooks
-    attr_accessor :webhook_jobs_namespace
-    attr_accessor :webhook_enabled_environments
-    attr_accessor :webhooks_manager_queue_name
+    # All settings configure the deprecated webhooks
+    %i[webhooks webhook_jobs_namespace webhook_enabled_environments webhooks_manager_queue_name].each do |setting|
+      attr_reader setting
+
+      define_method(:"#{setting}=") do |value|
+        ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::Configuration##{setting}=") if value.present?
+        instance_variable_set(:"@#{setting}", value)
+      end
+    end
 
     def initialize
       @webhooks_manager_queue_name = Rails.application.config.active_job.queue_name

@@ -5,7 +5,7 @@ class ClientTest < ActiveSupport::TestCase
 
   [ShopifyGraphql::Query, ShopifyGraphql::Mutation, ShopifyGraphql::Resource].each do |concern|
     test "#{concern} sends the rotated token after copying session attributes" do
-      operation_class = Class.new { include concern }
+      operation_class = ShopifyGraphql.deprecator.silence { Class.new { include concern } }
       operation = concern == ShopifyGraphql::Resource ? operation_class : operation_class.new
       original = stub_query(API_PATH, "test-token")
       operation.execute(QUERY)
