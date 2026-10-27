@@ -5,6 +5,7 @@ module ShopifyGraphql
     end
 
     def perform(shop_domain:, shop_token:)
+      ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::CreateWebhooksJob")
       webhooks = ShopifyGraphql.configuration.webhooks
 
       ShopifyAPI::Auth::Session.temp(shop: shop_domain, access_token: shop_token) do

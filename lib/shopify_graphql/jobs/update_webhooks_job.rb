@@ -7,6 +7,7 @@ module ShopifyGraphql
     retry_on ShopifyGraphql::TooManyRequests
 
     def perform(shop_domain:, shop_token:)
+      ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::UpdateWebhooksJob")
       webhooks = ShopifyGraphql.configuration.webhooks
 
       ShopifyAPI::Auth::Session.temp(shop: shop_domain, access_token: shop_token) do

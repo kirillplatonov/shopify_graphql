@@ -12,7 +12,7 @@ module ShopifyGraphql
     private
 
     def deprecate_webhooks
-      ShopifyGraphql.deprecator.warn("ShopifyGraphql webhooks are deprecated and will be removed in v3.0. Please use shopify_app gem for handling webhooks.")
+      ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::WebhookVerification")
     end
 
     def verify_request

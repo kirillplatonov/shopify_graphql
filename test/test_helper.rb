@@ -14,6 +14,7 @@ class ActiveSupport::TestCase
   API_PATH = "https://test-shop.myshopify.com/admin/api/2024-07/graphql.json"
 
   setup do
+    ShopifyGraphql::Deprecation.reset
     session = ShopifyAPI::Auth::Session.new(shop: "test-shop.myshopify.com", access_token: "test-token")
     ShopifyAPI::Context.activate_session(session)
   end

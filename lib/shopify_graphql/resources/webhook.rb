@@ -48,6 +48,7 @@ module ShopifyGraphql
 
     class << self
       def all
+        ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::Webhook")
         response = execute(ALL_WEBHOOKS_QUERY)
         response.data.webhookSubscriptions.edges.map do |edge|
           edge.node
@@ -55,6 +56,7 @@ module ShopifyGraphql
       end
 
       def create(topic:, address:, include_fields:)
+        ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::Webhook")
         response = execute(CREATE_WEBHOOK_MUTATION,
           topic: topic,
           webhookSubscription: {
@@ -68,6 +70,7 @@ module ShopifyGraphql
       end
 
       def delete(id)
+        ShopifyGraphql::Deprecation.warn_webhooks_once("ShopifyGraphql::Webhook")
         response = execute(DELETE_WEBHOOK_MUTATION, id: id)
         response = response.data.webhookSubscriptionDelete
         handle_user_errors(response)

@@ -21,6 +21,9 @@ module ShopifyGraphql
     GRAPHQL
 
     def call(namespace:, key:, value:, owner: nil)
+      ShopifyGraphql::Deprecation.warn_once("ShopifyGraphql::UpsertPrivateMetafield", "ShopifyGraphql::UpsertPrivateMetafield is deprecated and will be removed in v3.0. " \
+        "Shopify has removed privateMetafieldUpsert from the Admin API. Please use app-owned metafields (metafieldsSet with an $app namespace) instead.")
+
       input = {namespace: namespace, key: key}
       input[:owner] = owner if owner
 

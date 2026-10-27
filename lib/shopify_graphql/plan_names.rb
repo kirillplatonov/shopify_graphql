@@ -1,0 +1,36 @@
+module ShopifyGraphql
+  # Maps plan.displayName to the legacy plan_name for CurrentShop. The public
+  # ShopifyGraphql::PLAN_TO_DISPLAY_NAME and DISPLAY_NAME_TO_PLAN are deprecated.
+  module PlanNames # :nodoc:
+    # Mapping from deprecated plan_name to plan_display_name
+    PLAN_TO_DISPLAY_NAME = {
+      "trial" => "trial",
+      "frozen" => "frozen",
+      "fraudulent" => "cancelled",
+      "shopify_alumni" =>	"shopify_alumni",
+      "affiliate" => "development",
+      "basic" => "basic",
+      "professional" => "shopify",
+      "npo_full" => "npo_full",
+      "shopify_plus" => "shopify_plus",
+      "staff" => "staff",
+      "unlimited" => "advanced",
+      "retail" => "retail",
+      "cancelled" => "cancelled",
+      "dormant" => "pause_and_build",
+      "starter_2022" => "shopify_starter",
+      "plus_partner_sandbox" => "shopify_plus_partner_sandbox",
+      "paid_trial" => "extended_trial",
+      "partner_test" => "developer_preview",
+      "open_learning" => "open_learning",
+      "staff_business" => "staff_business"
+    }
+    DISPLAY_NAME_TO_PLAN = PLAN_TO_DISPLAY_NAME.invert
+
+    def self.normalize_display_name(plan_display_name)
+      return if plan_display_name.blank?
+      plan_display_name.parameterize(separator: "_")
+    end
+  end
+  private_constant :PlanNames
+end

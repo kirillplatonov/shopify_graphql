@@ -1,8 +1,4 @@
 module ShopifyGraphql
-  def self.deprecator
-    @deprecator ||= ActiveSupport::Deprecation.new("3.0", "ShopifyGraphql")
-  end
-
   module RedactJobParams
     private
 
@@ -20,6 +16,10 @@ module ShopifyGraphql
   class Engine < ::Rails::Engine
     engine_name 'shopify_graphql'
     isolate_namespace ShopifyGraphql
+
+    initializer "shopify_graphql.deprecator" do |app|
+      app.deprecators[:shopify_graphql] = ShopifyGraphql.deprecator if app.respond_to?(:deprecators)
+    end
 
     initializer "shopify_graphql.redact_job_params" do
       ActiveSupport.on_load(:active_job) do

@@ -3,6 +3,7 @@ require 'ostruct'
 require 'shopify_api'
 require 'active_support'
 
+require 'shopify_graphql/deprecation'
 require 'shopify_graphql/client'
 require 'shopify_graphql/configuration'
 if defined?(Rails)
@@ -10,6 +11,7 @@ if defined?(Rails)
 end
 require 'shopify_graphql/exceptions'
 require 'shopify_graphql/mutation'
+require 'shopify_graphql/plan_names'
 require 'shopify_graphql/query'
 require 'shopify_graphql/resource'
 require 'shopify_graphql/response'
