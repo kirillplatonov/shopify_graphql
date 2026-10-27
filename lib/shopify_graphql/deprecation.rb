@@ -46,13 +46,22 @@ module ShopifyGraphql
         app_frames.empty? ? callstack : app_frames
       end
     end
-  end
 
-  def self.const_missing(name)
-    return super unless %i[PLAN_TO_DISPLAY_NAME DISPLAY_NAME_TO_PLAN].include?(name)
+    # Deprecated constant that warns once per process. It's a real constant, so
+    # unqualified lookups from code nested in ShopifyGraphql and defined? still work.
+    class ConstantProxy < ActiveSupport::Deprecation::DeprecatedConstantProxy # :nodoc:
+      private
 
-    Deprecation.warn_once("ShopifyGraphql::#{name}", "ShopifyGraphql::#{name} is deprecated and will be removed in v3.0. #{Deprecation::PLAN_MESSAGE}")
-    PlanNames.const_get(name)
+      def const_missing(name)
+        ShopifyGraphql::Deprecation.warn_once(@old_const, @message)
+        target.const_get(name)
+      end
+
+      def method_missing(called, *args, &block)
+        ShopifyGraphql::Deprecation.warn_once(@old_const, @message)
+        target.__send__(called, *args, &block)
+      end
+    end
   end
 
   def self.normalize_plan_display_name(plan_display_name)

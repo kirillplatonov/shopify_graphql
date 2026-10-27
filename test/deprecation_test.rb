@@ -1,6 +1,19 @@
 require "test_helper"
 require "open3"
 
+module ShopifyGraphql
+  # App code nested in the gem's namespace finds constants through lexical scope
+  class NestedPlanNamesLookup
+    def self.plan_name(display_name)
+      DISPLAY_NAME_TO_PLAN[display_name]
+    end
+
+    def self.display_name(plan_name)
+      PLAN_TO_DISPLAY_NAME[plan_name]
+    end
+  end
+end
+
 class DeprecationTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
@@ -23,7 +36,7 @@ class DeprecationTest < ActiveSupport::TestCase
   end
 
   test "warning points at the caller outside the gem" do
-    warnings = collect_deprecations(ShopifyGraphql.deprecator) { ShopifyGraphql::PLAN_TO_DISPLAY_NAME }.last
+    warnings = collect_deprecations(ShopifyGraphql.deprecator) { ShopifyGraphql::PLAN_TO_DISPLAY_NAME.size }.last
 
     assert_match "called from", warnings.first
     assert_includes warnings.first, __FILE__
@@ -182,24 +195,39 @@ class DeprecationTest < ActiveSupport::TestCase
   end
 
   test "PLAN_TO_DISPLAY_NAME" do
-    plan_names = ShopifyGraphql.const_get(:PlanNames)
-
     assert_deprecated_once("ShopifyGraphql::PLAN_TO_DISPLAY_NAME is deprecated") do
-      assert_same plan_names::PLAN_TO_DISPLAY_NAME, ShopifyGraphql::PLAN_TO_DISPLAY_NAME
+      assert_equal ShopifyGraphql::PlanNames::PLAN_TO_DISPLAY_NAME, ShopifyGraphql::PLAN_TO_DISPLAY_NAME.to_h
     end
     assert_equal 20, ShopifyGraphql::PLAN_TO_DISPLAY_NAME.size
     assert_equal "developer_preview", ShopifyGraphql::PLAN_TO_DISPLAY_NAME["partner_test"]
     assert_equal "shopify", ShopifyGraphql::PLAN_TO_DISPLAY_NAME["professional"]
+    assert_equal Hash, ShopifyGraphql::PLAN_TO_DISPLAY_NAME.class
   end
 
   test "DISPLAY_NAME_TO_PLAN" do
-    plan_names = ShopifyGraphql.const_get(:PlanNames)
-
     assert_deprecated_once("ShopifyGraphql::DISPLAY_NAME_TO_PLAN is deprecated") do
-      assert_same plan_names::DISPLAY_NAME_TO_PLAN, ShopifyGraphql::DISPLAY_NAME_TO_PLAN
+      assert_equal ShopifyGraphql::PlanNames::DISPLAY_NAME_TO_PLAN, ShopifyGraphql::DISPLAY_NAME_TO_PLAN.to_h
     end
-    assert_equal plan_names::PLAN_TO_DISPLAY_NAME.invert, ShopifyGraphql::DISPLAY_NAME_TO_PLAN
+    assert_equal ShopifyGraphql::PlanNames::PLAN_TO_DISPLAY_NAME.invert, ShopifyGraphql::DISPLAY_NAME_TO_PLAN.to_h
     assert_equal "partner_test", ShopifyGraphql::DISPLAY_NAME_TO_PLAN["developer_preview"]
+  end
+
+  test "plan constants are defined" do
+    assert_not_deprecated(ShopifyGraphql.deprecator) do
+      assert_equal "constant", defined?(ShopifyGraphql::PLAN_TO_DISPLAY_NAME)
+      assert_equal "constant", defined?(ShopifyGraphql::DISPLAY_NAME_TO_PLAN)
+      assert ShopifyGraphql.const_defined?(:PLAN_TO_DISPLAY_NAME)
+      assert ShopifyGraphql.const_defined?(:DISPLAY_NAME_TO_PLAN)
+    end
+  end
+
+  test "plan constants resolve from code nested in the ShopifyGraphql namespace" do
+    assert_deprecated_once("ShopifyGraphql::PLAN_TO_DISPLAY_NAME is deprecated") do
+      assert_equal "shopify", ShopifyGraphql::NestedPlanNamesLookup.display_name("professional")
+    end
+    assert_deprecated_once("ShopifyGraphql::DISPLAY_NAME_TO_PLAN is deprecated") do
+      assert_equal "professional", ShopifyGraphql::NestedPlanNamesLookup.plan_name("shopify")
+    end
   end
 
   test "normalize_plan_display_name" do
