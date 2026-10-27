@@ -92,6 +92,10 @@ module ShopifyGraphql
   class PreconditionFailed < ClientError # :nodoc:
   end
 
+  # 422 Unprocessable Entity
+  class ResourceInvalid < ClientError # :nodoc:
+  end
+
   # 423 Locked
   class ShopLocked < ClientError # :nodoc:
   end

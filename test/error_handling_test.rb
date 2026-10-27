@@ -206,6 +206,18 @@ class ErrorHandlingTest < ActiveSupport::TestCase
     assert_includes error.message, "Bad request"
   end
 
+  test "unprocessable entity" do
+    stub_request(:post, API_PATH)
+      .to_return(status: 422, body: { errors: ["Unprocessable entity"] }.to_json)
+
+    error = assert_raises ShopifyGraphql::ResourceInvalid do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+    assert_kind_of ShopifyGraphql::ClientError, error
+    assert_equal 422, error.code
+    assert_includes error.message, "Unprocessable entity"
+  end
+
   test "string errors" do
     stub_request(:post, API_PATH)
       .to_return(body: { errors: "Something went wrong" }.to_json)
