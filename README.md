@@ -804,7 +804,29 @@ response.points_maxed?(threshold: 100) # => false
 
 ## Error handling
 
-Failed calls raise `ShopifyGraphql::ConnectionError` or one of its subclasses: `TooManyRequests` (`THROTTLED`), `ServerError`, `ShopPendingTermination`, HTTP errors like `BadRequest` or `ResourceNotFound`, and `UserError` from `handle_user_errors`.
+Failed calls raise `ShopifyGraphql::ConnectionError` or one of its subclasses. GraphQL errors come back with HTTP 200 and are mapped by the first error's `extensions.code`:
+
+| Class | Raised for |
+| --- | --- |
+| `TooManyRequests` | `THROTTLED`, HTTP 429 and 430 |
+| `ServerError` | `INTERNAL_SERVER_ERROR`, HTTP 5xx, invalid JSON and network errors |
+| `AccessDenied` | `ACCESS_DENIED` (missing access scope) |
+| `MaxCostExceeded` | `MAX_COST_EXCEEDED` (query is over the single query cost limit) |
+| `ShopInactive` | `SHOP_INACTIVE` |
+| `ShopPendingTermination` | `SHOP_PENDING_TERMINATION` |
+| `BadRequest` | HTTP 400 |
+| `UnauthorizedAccess` | HTTP 401 |
+| `PaymentRequired` | HTTP 402 (shop is frozen) |
+| `ForbiddenAccess` | HTTP 403 (shop is marked as fraudulent) |
+| `NonExpiringTokenRejected` | HTTP 403 for a public app's non-expiring offline access token, from January 1, 2027. Subclass of `ForbiddenAccess` |
+| `ResourceNotFound` | HTTP 404 |
+| `MethodNotAllowed`, `ResourceConflict`, `ResourceGone`, `PreconditionFailed` | HTTP 405, 409, 410, 412 |
+| `ShopLocked` | HTTP 423 |
+| `ClientError` | Other HTTP 4xx |
+| `UserError` | `userErrors`, from `handle_user_errors` |
+| `ConnectionError` | Other GraphQL error codes |
+
+Everything except `ServerError`, `UserError` and plain `ConnectionError` is a `ClientError`.
 
 Errors raised from a GraphQL response carry its partial `data`, all of its `errors`, and the same cost readers as the response (`query_cost`, `requested_query_cost`, `points_left`, `points_limit`, `points_restore_rate`). `errors` is always an Array, empty when there are none. `data` and the cost readers return `nil` when the information isn't available, e.g. for HTTP and network errors.
 
@@ -848,6 +870,26 @@ Wrappers that include `ShopifyGraphql::Query` or `ShopifyGraphql::Mutation` atta
 response = ShopifyGraphql.execute(PRODUCT_UPDATE_MUTATION, input: input)
 ShopifyGraphql.handle_user_errors(response.data.productUpdate, response: response)
 ```
+
+### Unavailable shops
+
+`UnauthorizedAccess`, `PaymentRequired`, `ShopLocked`, `ShopPendingTermination` and `ShopInactive` include `ShopifyGraphql::ShopUnavailable`. Rescue it to stop working with a shop that uninstalled the app or was frozen, locked or closed:
+
+```rb
+class SyncProductsJob < ApplicationJob
+  discard_on ShopifyGraphql::ShopUnavailable
+
+  def perform(shop)
+    shop.with_shopify_session do
+      GetProducts.call
+    end
+  end
+end
+```
+
+Shopify also returns 401 for an expired access token. If you use expiring offline access tokens, a 401 can mean the token wasn't refreshed, so refresh it before treating the shop as uninstalled.
+
+`ForbiddenAccess`, `NonExpiringTokenRejected` and `ResourceNotFound` aren't included, so handle them separately. A 403 means the shop was marked as fraudulent or, from January 1, 2027, that the app sent a non-expiring access token, which would affect every shop at once. A 404 is also raised for null nodes.
 
 ## Custom apps
 

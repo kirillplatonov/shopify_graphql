@@ -80,6 +80,35 @@ class ErrorHandlingTest < ActiveSupport::TestCase
     }
   }
 
+  MAX_COST_EXCEEDED_BODY = {
+    errors: [
+      {
+        message: "Query cost is 1105, which exceeds the single query max cost limit (1000).",
+        extensions: {
+          code: "MAX_COST_EXCEEDED",
+          cost: 1105,
+          maxCost: 1000,
+          documentation: "https://shopify.dev/api/usage/rate-limits"
+        }
+      }
+    ]
+  }
+
+  SHOP_INACTIVE_BODY = {
+    errors: [
+      {
+        message: "Shop is not active",
+        extensions: {
+          code: "SHOP_INACTIVE"
+        }
+      }
+    ]
+  }
+
+  NON_EXPIRING_TOKEN_BODY = {
+    errors: "Non-expiring access tokens are no longer accepted for the Admin API"
+  }
+
   class CreateMetafieldDefinition
     include ShopifyGraphql::Mutation
 
@@ -264,10 +293,9 @@ class ErrorHandlingTest < ActiveSupport::TestCase
   test "access denied error keeps partial data and errors" do
     stub_request(:post, API_PATH).to_return(body: ACCESS_DENIED_BODY.to_json)
 
-    error = assert_raises ShopifyGraphql::ConnectionError do
+    error = assert_raises ShopifyGraphql::AccessDenied do
       ShopifyGraphql.execute(SIMPLE_QUERY)
     end
-    assert_equal ShopifyGraphql::ConnectionError, error.class
     assert_equal "ACCESS_DENIED", error.error_code
     assert_equal "Graphql Gem Test", error.data.shop.name
     assert_nil error.data.productsCount
@@ -292,6 +320,128 @@ class ErrorHandlingTest < ActiveSupport::TestCase
     assert_equal [["productsCount"], ["orders"]], error.errors.map(&:path)
     assert_equal ["ACCESS_DENIED"], error.error_codes
     assert_equal [ACCESS_DENIED_BODY[:errors].first[:message]], error.messages
+  end
+
+  {
+    "ACCESS_DENIED" => ShopifyGraphql::AccessDenied,
+    "SHOP_INACTIVE" => ShopifyGraphql::ShopInactive,
+    "MAX_COST_EXCEEDED" => ShopifyGraphql::MaxCostExceeded
+  }.each do |code, error_class|
+    test "#{code} raises #{error_class.name.demodulize} with data, errors and cost" do
+      body = ACCESS_DENIED_BODY.deep_dup
+      body[:errors].first[:extensions][:code] = code
+
+      error = raised_error(body: body)
+      assert_equal error_class, error.class
+      assert_kind_of ShopifyGraphql::ClientError, error
+      assert_kind_of ShopifyGraphql::ConnectionError, error
+      assert_equal 200, error.code
+      assert_equal code, error.error_code
+      assert_equal [code], error.error_codes
+      assert_includes error.message, "Response code = #{code}."
+      assert_equal "Graphql Gem Test", error.data.shop.name
+      assert_equal [["productsCount"]], error.errors.map(&:path)
+      assert_equal 2, error.query_cost
+      assert_equal 1998, error.points_left
+    end
+  end
+
+  test "max cost exceeded error keeps cost details from the error" do
+    stub_request(:post, API_PATH).to_return(body: MAX_COST_EXCEEDED_BODY.to_json)
+
+    error = assert_raises ShopifyGraphql::MaxCostExceeded do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+    assert_equal "MAX_COST_EXCEEDED", error.error_code
+    assert_equal 1105, error.errors.first.extensions.cost
+    assert_equal 1000, error.errors.first.extensions.maxCost
+    assert_nil error.data
+    assert_no_cost error
+  end
+
+  test "unknown graphql error code raises plain ConnectionError" do
+    body = { errors: [{ message: "Something new", extensions: { code: "SOMETHING_NEW" } }] }
+
+    error = raised_error(body: body)
+    assert_equal ShopifyGraphql::ConnectionError, error.class
+    assert_equal "SOMETHING_NEW", error.error_code
+    assert_equal ["Something new"], error.messages
+  end
+
+  test "403 with non-expiring token message raises NonExpiringTokenRejected" do
+    error = raised_error(status: 403, body: NON_EXPIRING_TOKEN_BODY)
+
+    assert_equal ShopifyGraphql::NonExpiringTokenRejected, error.class
+    assert_kind_of ShopifyGraphql::ForbiddenAccess, error
+    assert_equal 403, error.code
+    assert_includes error.message, "Non-expiring access tokens are no longer accepted for the Admin API"
+  end
+
+  test "non-expiring token message is matched case-insensitively" do
+    body = { errors: [{ message: "[API] NON-EXPIRING ACCESS TOKENS ARE NO LONGER ACCEPTED for the Admin API." }] }
+
+    error = raised_error(status: 403, body: body)
+    assert_equal ShopifyGraphql::NonExpiringTokenRejected, error.class
+  end
+
+  test "plain 403 raises ForbiddenAccess" do
+    error = raised_error(status: 403, body: { errors: "User does not have access" })
+
+    assert_equal ShopifyGraphql::ForbiddenAccess, error.class
+    assert_equal 403, error.code
+  end
+
+  test "shop unavailable errors" do
+    errors = [
+      raised_error(status: 401, body: { errors: "[API] Invalid API key or access token (unrecognized login or wrong password)" }),
+      raised_error(status: 402, body: { errors: "Unavailable Shop" }),
+      raised_error(status: 423, body: { errors: "This shop is unavailable" }),
+      raised_error(body: File.read(File.expand_path("fixtures/mutations/shop_pending_termination.json", __dir__))),
+      raised_error(body: SHOP_INACTIVE_BODY)
+    ]
+
+    assert_equal [
+      ShopifyGraphql::UnauthorizedAccess,
+      ShopifyGraphql::PaymentRequired,
+      ShopifyGraphql::ShopLocked,
+      ShopifyGraphql::ShopPendingTermination,
+      ShopifyGraphql::ShopInactive
+    ], errors.map(&:class)
+    errors.each do |error|
+      assert error.is_a?(ShopifyGraphql::ShopUnavailable), "#{error.class} should be ShopUnavailable"
+    end
+  end
+
+  test "other errors are not shop unavailable" do
+    errors = [
+      raised_error(status: 403, body: { errors: "User does not have access" }),
+      raised_error(status: 403, body: NON_EXPIRING_TOKEN_BODY),
+      raised_error(status: 404, body: { errors: "Not Found" }),
+      raised_error(body: ACCESS_DENIED_BODY),
+      raised_error(body: THROTTLED_BODY),
+      raised_error(status: 429, body: THROTTLED_BODY)
+    ]
+
+    assert_equal [
+      ShopifyGraphql::ForbiddenAccess,
+      ShopifyGraphql::NonExpiringTokenRejected,
+      ShopifyGraphql::ResourceNotFound,
+      ShopifyGraphql::AccessDenied,
+      ShopifyGraphql::TooManyRequests,
+      ShopifyGraphql::TooManyRequests
+    ], errors.map(&:class)
+    errors.each do |error|
+      refute error.is_a?(ShopifyGraphql::ShopUnavailable), "#{error.class} should not be ShopUnavailable"
+    end
+  end
+
+  test "rescues ShopUnavailable" do
+    stub_request(:post, API_PATH).to_return(body: SHOP_INACTIVE_BODY.to_json)
+
+    error = assert_raises ShopifyGraphql::ShopUnavailable do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+    assert_equal "SHOP_INACTIVE", error.error_code
   end
 
   test "mutation user error exposes cost" do
@@ -409,6 +559,15 @@ class ErrorHandlingTest < ActiveSupport::TestCase
   end
 
   private
+
+  def raised_error(status: 200, body:)
+    body = body.to_json unless body.is_a?(String)
+    stub_request(:post, API_PATH).to_return(status: status, body: body)
+
+    assert_raises ShopifyGraphql::ConnectionError do
+      ShopifyGraphql.execute(SIMPLE_QUERY)
+    end
+  end
 
   def assert_no_cost(error)
     assert_nil error.query_cost

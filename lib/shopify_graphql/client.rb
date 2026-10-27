@@ -14,6 +14,9 @@ module ShopifyGraphql
       EOFError
     ].freeze
 
+    # Stable part of the 403 errors message for a non-expiring offline access token
+    NON_EXPIRING_TOKEN_MESSAGE = /non-expiring access tokens are no longer accepted/i
+
     def client
       session = ShopifyAPI::Context.active_session
       if @client.nil? || @access_token != session&.access_token || @shop != session&.shop
@@ -61,6 +64,9 @@ module ShopifyGraphql
       when 402
         raise PaymentRequired.new(response: response), error.message
       when 403
+        if non_expiring_token_rejected?(response)
+          raise NonExpiringTokenRejected.new(response: response), error.message
+        end
         raise ForbiddenAccess.new(response: response), error.message
       when 404
         raise ResourceNotFound.new(response: response), error.message
@@ -121,6 +127,12 @@ module ShopifyGraphql
           ServerError.new(response: response)
         when "SHOP_PENDING_TERMINATION"
           ShopPendingTermination.new(response: response)
+        when "SHOP_INACTIVE"
+          ShopInactive.new(response: response)
+        when "ACCESS_DENIED"
+          AccessDenied.new(response: response)
+        when "MAX_COST_EXCEEDED"
+          MaxCostExceeded.new(response: response)
         else
           ConnectionError.new(response: response)
         end
@@ -129,6 +141,11 @@ module ShopifyGraphql
       exception.messages = [ error.message ]
       attach_graphql_response(exception, parsed_body)
       raise exception, error_message
+    end
+
+    def non_expiring_token_rejected?(response)
+      body = response.body.is_a?(String) ? response.body : response.body.to_json
+      body.match?(NON_EXPIRING_TOKEN_MESSAGE)
     end
 
     def attach_graphql_response(exception, parsed_body, errors: parsed_body.errors)
