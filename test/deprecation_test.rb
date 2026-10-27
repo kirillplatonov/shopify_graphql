@@ -121,24 +121,28 @@ class DeprecationTest < ActiveSupport::TestCase
     deprecator.behavior = old_behavior
   end
 
-  test "Configuration#webhooks=" do
-    config = ShopifyGraphql::Configuration.new
-    webhooks = [{ topic: "SHOP_UPDATE", address: "https://example.com/graphql_webhooks/shop_update" }]
+  {
+    webhooks: [{ topic: "SHOP_UPDATE", address: "https://example.com/graphql_webhooks/shop_update" }],
+    webhook_jobs_namespace: "shopify/webhooks",
+    webhook_enabled_environments: ["development", "production"],
+    webhooks_manager_queue_name: "webhooks",
+  }.each do |setting, value|
+    test "Configuration##{setting}=" do
+      config = ShopifyGraphql::Configuration.new
 
-    assert_deprecated_once("ShopifyGraphql::Configuration#webhooks= is part of ShopifyGraphql webhooks") do
-      config.webhooks = webhooks
+      assert_deprecated_once("ShopifyGraphql::Configuration##{setting}= is part of ShopifyGraphql webhooks") do
+        config.public_send(:"#{setting}=", value)
+      end
+      assert_equal value, config.public_send(setting)
     end
-    assert_equal webhooks, config.webhooks
-    assert config.has_webhooks?
   end
 
-  test "Configuration#webhook_jobs_namespace=" do
-    config = ShopifyGraphql::Configuration.new
+  test "Configuration defaults don't warn" do
+    config = assert_not_deprecated(ShopifyGraphql.deprecator) { ShopifyGraphql::Configuration.new }
 
-    assert_deprecated_once("ShopifyGraphql::Configuration#webhook_jobs_namespace= is part of ShopifyGraphql webhooks") do
-      config.webhook_jobs_namespace = "shopify/webhooks"
-    end
-    assert_equal "shopify/webhooks", config.webhook_jobs_namespace
+    assert_equal ["production"], config.webhook_enabled_environments
+    assert_equal Rails.application.config.active_job.queue_name, config.webhooks_manager_queue_name
+    assert_not config.has_webhooks?
   end
 
   test "Configuration setters with blank values don't warn" do
@@ -149,6 +153,8 @@ class DeprecationTest < ActiveSupport::TestCase
       config.webhooks = nil
       config.webhook_jobs_namespace = nil
       config.webhook_jobs_namespace = ""
+      config.webhook_enabled_environments = []
+      config.webhooks_manager_queue_name = nil
     end
   end
 
